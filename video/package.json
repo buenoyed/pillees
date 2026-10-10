@@ -1,0 +1,19 @@
+{
+  "name": "pillees-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "shots": "node scripts/shots.mjs",
+    "music": "node scripts/music.mjs",
+    "studio": "remotion studio src/index.jsx",
+    "render": "remotion render src/index.jsx Promo out/pillees-promo.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.534",
+    "@remotion/google-fonts": "^4.0.534",
+    "puppeteer-core": "^25.13.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.534"
+  }
+}
