@@ -1,6 +1,6 @@
 // Pure data, shared by the scenes and scripts/music-teaser.mjs.
 export const FPS = 30;
-export const TOTAL = 1140;
+export const TOTAL = 1250;
 
 // Global frames.
 export const T = {
@@ -9,34 +9,25 @@ export const T = {
   jump: 138,
   chute: 250,
   glideOut: 300,
-  hop: 330,
-  mig: 540,
-  crowd: 870,
-  end: 990,
+  arb: 330,
+  capsule: 520,
+  hop: 730,
+  crowd: 940,
+  end: 1060,
 };
-export const CUTS = [T.hop, T.mig, T.crowd, T.end];
+export const CUTS = [T.arb, T.capsule, T.hop, T.crowd, T.end];
+
+// Arbitrage scene, local frames: land, grab the cheap coin, hop over, sell it higher.
+export const ARB = { land: 34, grab: 52, hop: 72, hopDur: 27, drop: 112, cheer: 122 };
 
 // The cliff walk and the jump.
 export const CLIFF = { top: 760, edge: 1180, x0: 160, x1: 1100, zoom: 0.4, omega: 18 };
 
-// multi_hop_swap scene, local frames.
-export const HOP = { nodes: [["SOL", 400, 760], ["MOSS", 960, 690], ["PILL", 1520, 760]], chips: [70, 110, 150] };
+// Capsule scene, local frames: landing, the shell, then the three things it comes with.
+export const CAPSULE = { land: 40, shell: 48, items: [70, 104, 138], cheer: 170 };
 
-// Synthetic migration scene, local frames.
-export const MIG = {
-  land: 40,
-  ghost: 52,
-  wall: 78,
-  bonk: 86,
-  now: 118,
-  full: 172,
-  bridge: 176,
-  run: 208,
-  leap: 250,
-  open: 272,
-};
-export const CURVE = { right: 1120, top: 520, base: 990 };
-export const POOL = { left: 1360, right: 1880, rim: 700, floor: 1000, level: 780 };
+// Route scene, local frames.
+export const HOP = { nodes: [["SOL", 400, 720], ["MOSS", 960, 650], ["PILL", 1520, 720]], chips: [70, 110, 150], spread: 160 };
 
 // Crowd scene: landing frame per parachuter, local.
 export const CROWD = [
@@ -52,4 +43,4 @@ export const CROWD = [
 
 export const WORD = "Pillees";
 export const URL = "pillees.fun";
-export const END = { word: 10, step: 4, url: 52, urlStep: 3, land: 96 };
+export const END = { pill: 4, land: 46, word: 56, step: 4, url: 88, urlStep: 3, line: 120, fade: 176 };

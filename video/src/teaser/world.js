@@ -24,10 +24,10 @@ const KEYS = [
   [175, "night"],
   [300, "dawn"],
   [345, "day"],
-  [520, "day"],
-  [600, "dusk"],
-  [850, "dusk"],
-  [900, "aurora"],
+  [700, "day"],
+  [780, "dusk"],
+  [920, "dusk"],
+  [970, "aurora"],
 ];
 
 export function paletteAt(f) {
@@ -114,6 +114,7 @@ export function drawSky(ctx, f, { camY = 0, camX = 0, rush = 0, mountains = 1, s
   }
 
   if (mountains > 0) {
+    ctx.globalAlpha = mountains;
     for (const [base, amp, seed, freq, color, para] of [
       [0.72, 0.26, 1.3, 2.4, pal.far, 0.12],
       [0.83, 0.2, 4.1, 3.6, pal.near, 0.25],
@@ -126,6 +127,7 @@ export function drawSky(ctx, f, { camY = 0, camX = 0, rush = 0, mountains = 1, s
         if (top < H) ctx.fillRect(x, top, S, H - top + S);
       }
     }
+    ctx.globalAlpha = 1;
   }
 
   for (let i = 0; i < 14; i++) {
@@ -136,6 +138,18 @@ export function drawSky(ctx, f, { camY = 0, camX = 0, rush = 0, mountains = 1, s
     pixelCloud(ctx, x, y, 160 + depth * 260, pal.cloud, 0.22 + depth * 0.25);
   }
   return pal;
+}
+
+// A thick layer of cloud whose middle sits at screen y `y`.
+export function cloudBank(ctx, f, y, color) {
+  for (let i = 0; i < 46; i++) {
+    const row = (i % 9) / 8;
+    const x = (hash(i + 40) * 1.4 - 0.2) * W + Math.sin(f * 0.02 + i) * 20;
+    const cy = y + (row - 0.5) * 760 + (hash(i + 41) - 0.5) * 120;
+    pixelCloud(ctx, x, cy, 520 + hash(i + 42) * 520, color, 0.55 + 0.45 * Math.sin(row * Math.PI));
+  }
+  ctx.fillStyle = color;
+  ctx.fillRect(0, snap(y - 220), W, 440);
 }
 
 /* ---------- Ground pieces ---------- */

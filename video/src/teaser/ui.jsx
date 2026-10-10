@@ -1,9 +1,8 @@
 import { loadFont } from "@remotion/google-fonts/PixelifySans";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 export const PIXEL = loadFont("normal", { weights: ["400", "500", "600", "700"], subsets: ["latin"] }).fontFamily;
 export const INK = "#2a2340";
-export const LAVENDER = "#ecebf5";
 
 export const ease = (f, [a, b], [from, to], easing) =>
   interpolate(f, [a, b], [from, to], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing });
@@ -72,96 +71,6 @@ export function Bubble({ x, y, text, at, until, side = "left", size = 44 }) {
           }}
         />
       </div>
-    </div>
-  );
-}
-
-export function Caption({ text, at = 6, y = 930, size = 84, color = INK }) {
-  const f = useCurrentFrame();
-  const p = usePop(at, { damping: 13, stiffness: 160, mass: 0.6 });
-  const shown = text.slice(0, Math.max(0, Math.floor((f - at) * 2.2)));
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: y,
-        transform: `translateY(-50%) translateY(${(1 - p) * 24}px)`,
-        textAlign: "center",
-        fontFamily: PIXEL,
-        fontWeight: 700,
-        fontSize: size,
-        letterSpacing: "0.01em",
-        color,
-        opacity: f >= at ? 1 : 0,
-      }}
-    >
-      {shown}
-      <span style={{ visibility: "hidden" }}>{text.slice(shown.length)}</span>
-    </div>
-  );
-}
-
-export function Tag({ children }) {
-  const p = usePop(2);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 70,
-        top: 64,
-        padding: "10px 24px 12px",
-        borderRadius: 999,
-        background: "rgba(255,255,255,0.6)",
-        border: `4px solid ${INK}`,
-        fontFamily: PIXEL,
-        fontWeight: 600,
-        fontSize: 32,
-        color: INK,
-        transform: `scale(${0.6 + 0.4 * p})`,
-        transformOrigin: "0 50%",
-        opacity: Math.min(1, p * 2),
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function Card({ color, children }) {
-  const f = useCurrentFrame();
-  const s = ease(f, [0, 6], [1.07, 1]);
-  return (
-    <AbsoluteFill style={{ background: color, overflow: "hidden" }}>
-      <AbsoluteFill style={{ transform: `scale(${s})` }}>{children}</AbsoluteFill>
-    </AbsoluteFill>
-  );
-}
-
-export function Tile({ label, x, y, size = 170, lit = 0, style }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x - size / 2,
-        top: y,
-        width: size,
-        height: size,
-        borderRadius: size * 0.16,
-        border: `6px solid ${INK}`,
-        background: lit > 0.5 ? "#9be7b4" : "#fff",
-        boxShadow: `0 ${size * 0.08}px 0 ${INK}`,
-        display: "grid",
-        placeItems: "center",
-        fontFamily: PIXEL,
-        fontWeight: 700,
-        fontSize: size * 0.34,
-        color: INK,
-        ...style,
-      }}
-    >
-      {label}
     </div>
   );
 }
