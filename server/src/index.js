@@ -117,9 +117,11 @@ async function ownedBot(id, auth, action, fields) {
 const routes = [
   ["GET", /^\/api\/bots$/, async (_, url) => {
     const range = RANGES[url.searchParams.get("range")] ? url.searchParams.get("range") : "7D";
-    const [bots, totals, coins] = await Promise.all([store.listBots(), store.totals(since(range)), store.listCoins()]);
+    const owner = url.searchParams.get("owner");
+    const [all, totals, coins] = await Promise.all([store.listBots(), store.totals(since(range)), store.listCoins()]);
+    const bots = owner ? all.filter((b) => b.owner === owner) : all;
     const byBot = Object.fromEntries(coins.map((c) => [c.botId, c]));
-    const market = await marketData(coins.map((c) => c.mint));
+    const market = await marketData(coins.filter((c) => bots.some((b) => b.id === c.botId)).map((c) => c.mint));
     const list = await Promise.all(bots.map((b) => publicBot(b, totals[b.id], byBot, market)));
     list.sort((a, b) => b.stats.profit - a.stats.profit || b.balance - a.balance);
     return { range, bots: list };

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { navigate } from "./router";
 
 const WalletContext = createContext(null);
 const provider = () => window.phantom?.solana ?? window.solflare ?? window.solana ?? null;
@@ -99,6 +100,16 @@ export function WalletMenu() {
       {open && (
         <div className="wallet-pop" role="menu">
           <code>{address}</code>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              navigate(`/profile/${address}`);
+            }}
+          >
+            Your profile
+          </button>
           <button
             type="button"
             role="menuitem"

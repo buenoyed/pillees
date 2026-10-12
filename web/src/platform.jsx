@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ago, api, fmtSol, fmtUsd, readImage, solscan, useApi } from "./api";
 import { SITE } from "./data";
 import { GlobeIcon, TelegramIcon, XIcon } from "./icons";
+import { Count } from "./motion";
 import { Link, navigate } from "./router";
 import { ConnectButton, short, useWallet } from "./wallet";
 
@@ -75,7 +76,7 @@ export function BotTable({ bots, limit }) {
         </thead>
         <tbody>
           {rows.map((bot, index) => (
-            <tr key={bot.id} onClick={() => navigate(`/bots/${bot.id}`)}>
+            <tr key={bot.id} style={{ "--i": index }} onClick={() => navigate(`/bots/${bot.id}`)}>
               <td className="rank">{index + 1}</td>
               <td>
                 <Link className="bot-cell" to={`/bots/${bot.id}`} onClick={(e) => e.stopPropagation()}>
@@ -131,8 +132,8 @@ export function CoinGrid({ coins, limit }) {
   }
   return (
     <ul className="coin-grid">
-      {rows.map((coin) => (
-        <li key={coin.mint}>
+      {rows.map((coin, index) => (
+        <li key={coin.mint} style={{ "--i": index }}>
           <Link className="coin-card" to={`/bots/${coin.botId}`}>
             <Logo src={coin.image} name={coin.name} size={56} />
             <span className="coin-copy">
@@ -618,7 +619,7 @@ export function BotPage({ id }) {
           <h1>{bot.name}</h1>
           <p className="bot-sub">
             <Status status={bot.status} /> Launched {ago(bot.createdAt)} by{" "}
-            <a href={solscan("account", bot.owner)}>{short(bot.owner)}</a>
+            <Link to={`/profile/${bot.owner}`}>{short(bot.owner)}</Link>
           </p>
         </div>
       </header>
@@ -639,19 +640,19 @@ export function BotPage({ id }) {
       <dl className="stats-grid">
         <div>
           <dt>Profit</dt>
-          <dd className={bot.stats.profit > 0 ? "up" : bot.stats.profit < 0 ? "down" : ""}>{fmtSol(bot.stats.profit, true)} SOL</dd>
+          <dd className={bot.stats.profit > 0 ? "up" : bot.stats.profit < 0 ? "down" : ""}><Count value={bot.stats.profit} format={(n) => `${fmtSol(n, true)} SOL`} /></dd>
         </div>
         <div>
           <dt>Creator fees</dt>
-          <dd>{fmtSol(bot.stats.fees)} SOL</dd>
+          <dd><Count value={bot.stats.fees} format={(n) => `${fmtSol(n)} SOL`} /></dd>
         </div>
         <div>
           <dt>Balance</dt>
-          <dd>{fmtSol(bot.balance)} SOL</dd>
+          <dd><Count value={bot.balance} format={(n) => `${fmtSol(n)} SOL`} /></dd>
         </div>
         <div>
           <dt>Trades</dt>
-          <dd>{bot.stats.trades}</dd>
+          <dd><Count value={bot.stats.trades} /></dd>
         </div>
       </dl>
       <p className="hint">

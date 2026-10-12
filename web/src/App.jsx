@@ -4,26 +4,40 @@ import Intro from "./Intro";
 import { useApi } from "./api";
 import { COIN, DOCS, LINKS } from "./data";
 import { PumpDocs, RunLocally, Sdk } from "./devpages";
+import { Profile, Search } from "./explore";
 import { GitHubIcon, PumpIcon, XIcon } from "./icons";
 import { BotPage, BotTable, CoinGrid, Launch, LaunchCoinPage, Leaderboard, Markets } from "./platform";
-import { Link, PATH, isHome, useRoute } from "./router";
-import { WalletMenu } from "./wallet";
+import { Link, PATH, isHome, navigate, useRoute } from "./router";
+import { WalletMenu, useWallet } from "./wallet";
+
+const ICONS = {
+  home: "M2.5 7.5 8 2.5l5.5 5v6h-4v-4h-3v4h-4z",
+  markets: "M2.5 13.5h11M4 11V7.5M7 11V4.5M10 11V6.5M13 11V3",
+  leaderboard: "M5 2.5h6v4a3 3 0 0 1-6 0zM5 4H2.5a2.5 2.5 0 0 0 2.6 3M11 4h2.5a2.5 2.5 0 0 1-2.6 3M8 9.5v3M5.5 13.5h5",
+  profile: "M8 8a2.75 2.75 0 1 0 0-5.5A2.75 2.75 0 0 0 8 8zM2.75 13.75c.6-2.5 2.7-4 5.25-4s4.65 1.5 5.25 4",
+  protocol: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5",
+  docs: "M2.5 3h4a2 2 0 0 1 1.5.7A2 2 0 0 1 9.5 3h4v10h-4a1.5 1.5 0 0 0-1.5 1.2A1.5 1.5 0 0 0 6.5 13h-4zM8 3.7v10.5",
+  sdk: "M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4M9.2 2.5 6.8 13.5",
+};
 
 const NAV = [
-  { id: "launch", label: "Create a bot" },
+  { id: "home", label: "Home" },
   { id: "leaderboard", label: "Leaderboard" },
   { id: "markets", label: "Coins" },
+  { id: "profile", label: "Profile" },
   { id: "protocol", label: "How it works" },
-  { id: "docs", label: "Docs" },
+  { id: "docs", label: "Pump docs" },
+  { id: "sdk", label: "SDK" },
 ];
 
 const TITLES = {
   home: "Create your own arbitrage bot",
-  markets: "Markets",
+  markets: "Coins",
   leaderboard: "Leaderboard",
   launch: "Create a bot",
   bot: "Bot",
   coin: "Launch a coin",
+  profile: "Profile",
   protocol: "How it works",
   docs: "Pump docs",
   sdk: "SDK",
@@ -36,12 +50,43 @@ const SOCIALS = [
   { id: "pump", label: "pump.fun", url: LINKS.pump, Icon: PumpIcon },
 ].filter(Boolean);
 
+function NavIcon({ id }) {
+  return (
+    <svg className="nav-icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
+      <path d={ICONS[id]} />
+    </svg>
+  );
+}
+
+function ProfileLink({ current, onDone }) {
+  const { address, connect } = useWallet();
+  const to = address ? `/profile/${address}` : "/profile";
+  return (
+    <a
+      href={to}
+      aria-current={current ? "page" : undefined}
+      onClick={(event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+        event.preventDefault();
+        onDone();
+        if (address) navigate(to);
+        else connect().then((key) => key && navigate(`/profile/${key}`)).catch(() => {});
+      }}
+    >
+      <NavIcon id="profile" />
+      Profile
+    </a>
+  );
+}
+
 export default function App() {
   const route = useRoute();
   const view = route.view;
+  const { address } = useWallet();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(isHome);
   const [introStage, setIntroStage] = useState("waiting");
+  const close = () => setMenuOpen(false);
 
   useEffect(() => {
     document.title = `Pillees — ${TITLES[view] || TITLES.home}`;
@@ -57,52 +102,95 @@ export default function App() {
           Skip to content
         </a>
         <header className="nav">
-          <div className="nav-inner">
-            <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
-              <img src="/pillee.png" alt="" width="28" height="32" />
-              <span>Pillees</span>
-            </Link>
-            <nav id="primary-nav" className={menuOpen ? "links open" : "links"} aria-label="Primary">
-              {NAV.map((item) => (
-                <Link key={item.id} to={PATH[item.id]} aria-current={view === item.id ? "page" : undefined}>
+          <Link className="brand" to="/" onClick={close}>
+            <img src="/pillee.png" alt="" width="32" height="36" />
+            <span>Pillees</span>
+          </Link>
+          <nav id="primary-nav" className={menuOpen ? "links open" : "links"} aria-label="Primary">
+            {NAV.map((item) =>
+              item.id === "profile" ? (
+                <ProfileLink key="profile" current={view === "profile" && route.id === address} onDone={close} />
+              ) : (
+                <Link key={item.id} to={PATH[item.id]} onClick={close} aria-current={view === item.id ? "page" : undefined}>
+                  <NavIcon id={item.id} />
                   {item.label}
                 </Link>
-              ))}
-            </nav>
-            <div className="nav-right">
-              <WalletMenu />
-              <button
-                className="menu"
-                type="button"
-                aria-expanded={menuOpen}
-                aria-controls="primary-nav"
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-                onClick={() => setMenuOpen((open) => !open)}
-              >
-                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-                  <path d={menuOpen ? "M3.5 3.5l9 9M12.5 3.5l-9 9" : "M2.5 4.5h11M2.5 8h11M2.5 11.5h11"} />
-                </svg>
-              </button>
-            </div>
+              ),
+            )}
+            <Link className="btn btn-primary side-cta" to="/launch" onClick={close}>
+              Create a bot
+            </Link>
+          </nav>
+          <div className="side-foot">
+            {SOCIALS.map(({ id, label, url, Icon }) => (
+              <a key={id} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label}>
+                <Icon />
+              </a>
+            ))}
+          </div>
+          <div className="nav-mobile">
+            <WalletMenu />
+            <button
+              className="menu"
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="primary-nav"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                <path d={menuOpen ? "M3.5 3.5l9 9M12.5 3.5l-9 9" : "M2.5 4.5h11M2.5 8h11M2.5 11.5h11"} />
+              </svg>
+            </button>
           </div>
         </header>
         <div className="page">
+          <div className="topbar">
+            <Search />
+            <div className="topbar-right">
+              <Link className="btn btn-ghost topbar-create" to="/launch">
+                Create a bot
+              </Link>
+              <WalletMenu />
+            </div>
+          </div>
           <main id="content">
-            {view === "home" && <Home />}
-            {view === "markets" && <Markets />}
-            {view === "leaderboard" && <Leaderboard />}
-            {view === "launch" && <Launch />}
-            {view === "bot" && <BotPage key={route.id} id={route.id} />}
-            {view === "coin" && <LaunchCoinPage key={route.id} id={route.id} />}
-            {view === "protocol" && <Protocol />}
-            {view === "sdk" && <Sdk />}
-            {view === "docs" && <PumpDocs />}
-            {view === "run" && <RunLocally />}
+            <div className="view" key={`${view}:${route.id ?? ""}`}>
+              {view === "home" && <Home />}
+              {view === "markets" && <Markets />}
+              {view === "leaderboard" && <Leaderboard />}
+              {view === "launch" && <Launch />}
+              {view === "bot" && <BotPage id={route.id} />}
+              {view === "coin" && <LaunchCoinPage id={route.id} />}
+              {view === "profile" && (route.id ? <Profile address={route.id} /> : <ConnectProfile />)}
+              {view === "protocol" && <Protocol />}
+              {view === "sdk" && <Sdk />}
+              {view === "docs" && <PumpDocs />}
+              {view === "run" && <RunLocally />}
+            </div>
           </main>
           <Footer />
         </div>
       </div>
     </>
+  );
+}
+
+function ConnectProfile() {
+  const { address, connect } = useWallet();
+  useEffect(() => {
+    if (address) navigate(`/profile/${address}`);
+  }, [address]);
+  return (
+    <section className="page narrow">
+      <header className="page-head">
+        <h1>Profile</h1>
+        <p>Connect your wallet to see your bots, their profit and the coins you launched.</p>
+      </header>
+      <button className="btn btn-primary" type="button" onClick={() => connect().catch(() => {})}>
+        Connect wallet
+      </button>
+    </section>
   );
 }
 

@@ -8,6 +8,7 @@ export const ROUTES = {
   "/leaderboard": "leaderboard",
   "/launch": "launch",
   "/protocol": "protocol",
+  "/profile": "profile",
   "/sdk": "sdk",
   "/docs": "docs",
   "/run": "run",
@@ -35,6 +36,8 @@ function read() {
   const path = clean(window.location.pathname);
   const bot = /^\/bots\/([\w-]+)(\/coin)?$/.exec(path);
   if (bot) return { view: bot[2] ? "coin" : "bot", id: bot[1] };
+  const profile = /^\/profile\/([1-9A-HJ-NP-Za-km-z]{32,44})$/.exec(path);
+  if (profile) return { view: "profile", id: profile[1] };
   return { view: ROUTES[path] ?? "home" };
 }
 
