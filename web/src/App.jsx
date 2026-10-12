@@ -265,10 +265,17 @@ function Hero() {
         <p className="eyebrow">Built on Pump’s multi-hop swap</p>
         <h1>Create your own arbitrage bot</h1>
         <p className="lede">
-          Pick a name and a logo, set its limits, fund it. Your bot gets its own public wallet
-          that anyone can track, and you control it with your wallet: stop it or withdraw any
-          time. Want more? Launch a pump.fun coin for it, and the coin’s creator fees fund the bot.
+          Pump’s new <code>multi_hop_swap</code> lets one trade route through several Pump pools,
+          like SOL → PUMP → a coin paired with PUMP, paying fees once for the whole route. More
+          coins now trade against each other on PumpSwap, and their prices drift away from the same
+          coin on Raydium, Meteora or Orca. Your bot watches those gaps. When one pays after every
+          fee, it buys where the coin is cheap and sells where it’s expensive, in one transaction.
+          If the price moves first, the whole trade cancels.
         </p>
+        <ul className="hero-facts">
+          <li>Its own public wallet. You stop it or withdraw by signing with yours, and no one gets its private key.</li>
+          <li>Optional: launch a pump.fun coin for it, and the coin’s creator fees fund the bot.</li>
+        </ul>
         <div className="hero-actions">
           <Link className="btn btn-primary" to="/launch">
             Create your bot

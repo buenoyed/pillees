@@ -1263,7 +1263,10 @@ h1, h2, h3 { letter-spacing: -0.025em; font-weight: 650; }
 
 .hero { grid-template-columns: 1.25fr 0.75fr; padding: 72px 0 48px; }
 .hero h1 { font-size: clamp(2.4rem, 4.6vw, 3.6rem); max-width: 13ch; line-height: 1.02; }
-.lede { font-size: 1.05rem; max-width: 34rem; margin-top: 14px; }
+.lede { font-size: 1.05rem; max-width: 36rem; margin-top: 14px; }
+.hero-facts { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; max-width: 36rem; color: var(--muted); font-size: 0.92rem; }
+.hero-facts li { position: relative; padding-left: 18px; }
+.hero-facts li::before { content: ""; position: absolute; left: 2px; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--mint); }
 .hero-actions { margin-top: 24px; }
 .hero-art::after { display: none; }
 .tilt { width: min(290px, 100%); }
@@ -1434,6 +1437,7 @@ main, .foot { width: min(1120px, calc(100% - 56px)); }
 .hero-copy > :nth-child(3) { animation-delay: 0.12s; }
 .hero-copy > :nth-child(4) { animation-delay: 0.18s; }
 .hero-copy > :nth-child(5) { animation-delay: 0.24s; }
+.hero-copy > :nth-child(6) { animation-delay: 0.3s; }
 .shell.waiting .hero-copy > *, .shell.revealing .hero-copy > * { animation: none; opacity: 0; }
 .shell.docked .topbar { animation: rise-in 0.5s ease 0.1s both; }
 .shell.waiting .topbar, .shell.revealing .topbar { opacity: 0; }
