@@ -657,8 +657,8 @@ export function BotPage({ id }) {
       </dl>
       <p className="hint">
         Limits: {bot.maxSize} SOL per trade, {bot.dailyLimit} SOL a day, minimum edge {bot.minEdgeBps} bps.
-        The multi-hop trading engine is rolling out to bots; until it reaches this one, a running
-        bot collects its coin’s creator fees and holds them as trading balance.
+        While running, the engine checks for gaps for this bot every few seconds and trades only when one
+        beats every fee plus the minimum edge. <Link to="/docs#engine">How it works</Link>
       </p>
 
       <div className="bot-cols">

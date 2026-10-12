@@ -9,6 +9,7 @@ import { checkSecret, openKeypair, sealKeypair } from "./keys.js";
 import { marketData } from "./market.js";
 import { balance, lamports, launchCoin, sol, uploadMetadata, withdraw } from "./solana.js";
 import { openStore } from "./store.js";
+import { startEngine } from "./engine.js";
 import { claimNow, startTracker } from "./tracker.js";
 
 const PORT = Number(process.env.PORT) || 8080;
@@ -24,7 +25,13 @@ checkSecret();
 if (process.env.RAILWAY_ENVIRONMENT && !process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is empty. On Railway it must reference Postgres: ${{Postgres.DATABASE_URL}}. Bot wallets would be lost on the next deploy.");
 }
+if (process.env.DATABASE_URL?.includes("${{")) {
+  throw new Error("DATABASE_URL is a Railway reference, which only works on Railway. Leave it empty in your local .env.");
+}
 const store = await openStore();
+const ENGINE_ON = process.env.ENGINE !== "off";
+let engine = null;
+let leading = false;
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -220,6 +227,18 @@ const routes = [
       return { mint, signature };
     });
   }],
+  ["GET", /^\/api\/engine$/, async () => {
+    const s = engine?.state;
+    return {
+      on: Boolean(s?.on),
+      leading,
+      candidates: s?.candidates.map((c) => c.symbol) ?? [],
+      scans: s?.scans ?? 0,
+      lastScan: s?.lastScan ?? null,
+      best: s?.best ?? null,
+      lastTrade: s?.lastTrade ?? null,
+    };
+  }],
   ["GET", /^\/api\/coins$/, async () => {
     const [coins, bots] = await Promise.all([store.listCoins(), store.listBots()]);
     const names = Object.fromEntries(bots.map((b) => [b.id, b.name]));
@@ -331,6 +350,19 @@ createServer(async (req, res) => {
   }
 }).listen(PORT, "0.0.0.0", () => {
   console.log(`pillees on :${PORT} (${process.env.DATABASE_URL ? "postgres" : "file store"})`);
-  startTracker(store);
+  lead();
 });
+
+// Only one instance tracks, claims and trades. Others serve the site and retry the lock.
+async function lead() {
+  try {
+    leading = await store.lead();
+  } catch (error) {
+    console.warn(`lock: ${error.message}`);
+  }
+  if (!leading) return setTimeout(lead, 30_000);
+  startTracker(store);
+  if (ENGINE_ON) engine = startEngine(store);
+  console.log(`leading: tracker on, engine ${ENGINE_ON ? "on" : "off"}`);
+}
 

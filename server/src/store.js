@@ -53,6 +53,7 @@ async function pgStore(url) {
       primary key (bot_id, signature)
     );
     create index if not exists activity_bot_time on activity (bot_id, time desc);
+    alter table activity add column if not exists size bigint;
   `);
 
   const bot = (row) =>
@@ -132,10 +133,10 @@ async function pgStore(url) {
     },
     async recordActivity(botId, a) {
       await pool.query(
-        `insert into activity (bot_id, signature, kind, delta, time) values ($1,$2,$3,$4,$5)
-         on conflict (bot_id, signature) do update set delta = coalesce(excluded.delta, activity.delta), time = excluded.time,
+        `insert into activity (bot_id, signature, kind, delta, time, size) values ($1,$2,$3,$4,$5,$6)
+         on conflict (bot_id, signature) do update set delta = coalesce(excluded.delta, activity.delta), time = excluded.time, size = coalesce(excluded.size, activity.size),
            kind = case when activity.delta is null then activity.kind else excluded.kind end`,
-        [botId, a.signature, a.kind, a.delta, a.time || new Date().toISOString()],
+        [botId, a.signature, a.kind, a.delta, a.time || new Date().toISOString(), a.size ?? null],
       );
     },
     async activityKind(botId, signature) {
@@ -145,6 +146,21 @@ async function pgStore(url) {
     async listActivity(botId, limit = 50) {
       const { rows } = await pool.query("select * from activity where bot_id = $1 order by time desc limit $2", [botId, limit]);
       return rows.map(act);
+    },
+    async spentSince(botId, sinceIso) {
+      const { rows } = await pool.query("select coalesce(sum(size), 0) as spent from activity where bot_id = $1 and time >= $2", [botId, sinceIso]);
+      return Number(rows[0].spent);
+    },
+    // One server trades at a time. The lock lives as long as this connection.
+    async lead() {
+      const client = await pool.connect();
+      const { rows } = await client.query("select pg_try_advisory_lock(7263541) as ok");
+      if (rows[0].ok) {
+        client.on("error", () => process.exit(1));
+        return true;
+      }
+      client.release();
+      return false;
     },
     async totals(sinceIso) {
       const { rows } = await pool.query(
@@ -213,9 +229,10 @@ function fileStore() {
       if (existing) {
         if (existing.delta == null && a.delta != null) existing.delta = a.delta;
         else if (a.delta != null) existing.kind = a.kind;
+        if (a.size != null) existing.size = a.size;
         existing.time = a.time || existing.time;
       } else {
-        db.activity.push({ botId, signature: a.signature, kind: a.kind, delta: a.delta ?? null, time: a.time || new Date().toISOString() });
+        db.activity.push({ botId, signature: a.signature, kind: a.kind, delta: a.delta ?? null, size: a.size ?? null, time: a.time || new Date().toISOString() });
       }
       save();
     },
@@ -227,7 +244,13 @@ function fileStore() {
         .filter((x) => x.botId === botId)
         .sort((a, b) => b.time.localeCompare(a.time))
         .slice(0, limit)
-        .map(({ botId: _, ...rest }) => rest);
+        .map(({ botId: _, size: __, ...rest }) => rest);
+    },
+    async spentSince(botId, sinceIso) {
+      return db.activity.filter((x) => x.botId === botId && x.time >= sinceIso).reduce((sum, x) => sum + (x.size || 0), 0);
+    },
+    async lead() {
+      return true;
     },
     async totals(sinceIso) {
       const out = {};

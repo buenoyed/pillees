@@ -996,6 +996,20 @@ body.intro-lock { overflow: hidden; }
 .doc-sec h2 a:hover::after { content: " #"; color: var(--dim); }
 .md-body kbd { font-family: var(--mono); font-size: 0.8em; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; }
 html:has(.docs-page) { scroll-behavior: smooth; }
+.docs-page .docs-toc { max-height: calc(100vh - 110px); overflow-y: auto; top: 90px; scrollbar-width: thin; }
+.toc-group { display: grid; gap: 2px; }
+.toc-group + .toc-group { margin-top: 12px; }
+.toc-group .eyebrow { margin: 0 0 4px 8px; }
+.engine-live { border: 1px solid var(--line); border-radius: 14px; background: #0e0f12; padding: 14px 16px; margin: 0 0 12px; }
+.engine-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink); font-weight: 600; margin: 0 0 10px !important; }
+.engine-head small { color: var(--dim); font-weight: 400; font-size: 0.8rem; margin-left: auto; }
+.engine-live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+.engine-live .dot.on { background: var(--mint); box-shadow: 0 0 0 0 rgba(134, 239, 172, 0.5); animation: ping 2s ease-out infinite; }
+.engine-live dl { display: grid; gap: 8px; margin: 0; }
+.engine-live dl div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 10px; font-size: 0.88rem; }
+.engine-live dt { color: var(--muted); }
+.engine-live dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .engine-live dl div { grid-template-columns: 1fr; gap: 2px; } }
 .docs-src { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
 .docs-src a { font-weight: 600; }
 .dim { color: var(--dim); }

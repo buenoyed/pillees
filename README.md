@@ -12,11 +12,24 @@ This repo is the tech behind it:
 | --- | --- |
 | [`@pillees/sdk`](packages/sdk) | Route rules, quotes with fees once per route, the account layout, instruction data, an edge finder and the capsule loop. No dependencies. |
 | [`pillees`](packages/cli) | A terminal tool built on the SDK: quote routes, list accounts, scan for edges, dry run a capsule. |
-| [`server`](server) | The pillees.fun backend: bot wallets, wallet-signed owner actions, coin launches through PumpPortal, creator-fee claims, on-chain profit tracking. Also serves the site. |
-| [`web`](web) | The site: launch, leaderboard, markets, bot pages, and Pump's doc embedded. |
+| [`server`](server) | The pillees.fun backend: the live trading engine, bot wallets, wallet-signed owner actions, coin launches through PumpPortal, creator-fee claims, on-chain profit tracking. Also serves the site. |
+| [`web`](web) | The site: launch, leaderboard, markets, bot pages, docs, and Pump's doc embedded. |
 | [`video`](video) | Remotion sources for the promo and teaser. |
 
-> The SDK and CLI run on a seeded sample market and never send a transaction. The live multi-hop trading engine is rolling out to bots; until then a running bot collects its coin's creator fees. Trading can lose money.
+> The SDK and CLI run on a seeded sample market and never send a transaction. Live trading happens in the server's engine. Trading can lose money.
+
+## The live engine
+
+[`server/src/engine.js`](server/src/engine.js) trades for every running bot:
+
+1. **Find coins.** Every 15 minutes it picks up to 40 pump coins that have a PumpSwap pool against SOL and a pool on another exchange, each with $20k+ liquidity (from DexScreener, plus every bot's coin).
+2. **Probe.** One coin at a time (about 10 seconds each, Jupiter is rate limited), it prices a 0.05 SOL round trip for the next coin through Jupiter, both ways: buy on PumpSwap and sell elsewhere, or the reverse.
+3. **Size.** If a probe comes back ahead, each running bot gets `min(max trade, daily limit left, balance − 0.01 SOL reserve)`, re-priced at that size and a third of it.
+4. **Floor.** It only goes ahead if the result beats `SOL in + network fee + priority fee + rent + SOL in × min edge`. That floor becomes the sell leg's minimum out.
+5. **One transaction.** Both swaps go into one versioned transaction with lookup tables. If the sell would miss the floor, the whole transaction fails and the bot keeps its SOL.
+6. **Simulate, send, record.** Nothing is sent unless simulation passes. The trade size is stored for the daily limit, and the tracker fills in the real result from the chain.
+
+Only one server instance trades: it takes a Postgres advisory lock first. `ENGINE=off` turns trading off. `GET /api/engine` shows what it is watching and its best recent gap. The full write-up is at [pillees.fun/docs](https://pillees.fun/docs#engine).
 
 ## Run it
 

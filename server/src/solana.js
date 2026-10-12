@@ -23,8 +23,9 @@ export async function balance(address) {
   return connection.getBalance(new PublicKey(address));
 }
 
-async function send(tx, signers) {
-  const raw = tx instanceof VersionedTransaction ? (tx.sign(signers), tx.serialize()) : tx.serialize();
+export async function send(tx, signers) {
+  if (signers && tx instanceof VersionedTransaction) tx.sign(signers);
+  const raw = tx.serialize();
   const signature = await connection.sendRawTransaction(raw, { maxRetries: 3 });
   const latest = await connection.getLatestBlockhash();
   const result = await connection.confirmTransaction({ signature, ...latest }, "confirmed");

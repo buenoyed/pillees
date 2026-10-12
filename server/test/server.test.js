@@ -43,6 +43,31 @@ test("verify rejects changed fields, another bot, and old signatures", () => {
   assert.throws(() => verify(signed(owner, "status", "bot1", {}, Date.now() - 10 * 60_000), "status", "bot1", {}), /expired/);
 });
 
+test("the sell leg's minimum never drops below the floor", async () => {
+  const { withFloor, costs } = await import("../src/engine.js");
+  for (const [out, floor] of [[1_000_000, 990_000], [123_456_789, 123_000_000], [50_100_000, 50_041_000]]) {
+    const q = withFloor({ outAmount: String(out), slippageBps: 100, otherAmountThreshold: "0" }, floor);
+    assert.ok(BigInt(q.otherAmountThreshold) >= BigInt(floor));
+    assert.ok(BigInt(q.otherAmountThreshold) <= BigInt(out));
+    assert.equal(q.otherAmountThreshold, ((BigInt(out) * BigInt(10_000 - q.slippageBps)) / 10_000n).toString());
+  }
+  assert.equal(withFloor({ outAmount: "1000" }, 1000), null);
+  assert.equal(withFloor({ outAmount: "1000000" }, 999_999.5), null);
+  assert.ok(costs({ needsTokenAccount: true }) > costs({ needsTokenAccount: false }));
+});
+
+test("daily spend counts trade sizes in the window", async () => {
+  delete process.env.DATABASE_URL;
+  process.env.DATA_DIR = mkdtempSync(`${tmpdir()}/pillees-`);
+  const { openStore } = await import("../src/store.js");
+  const store = await openStore();
+  await store.recordActivity("b", { signature: "x", kind: "trade", delta: null, size: 300, time: new Date().toISOString() });
+  await store.recordActivity("b", { signature: "y", kind: "trade", delta: null, size: 200, time: new Date(Date.now() - 2 * 864e5).toISOString() });
+  await store.recordActivity("b", { signature: "x", kind: "trade", delta: 12 });
+  assert.equal(await store.spentSince("b", new Date(Date.now() - 864e5).toISOString()), 300);
+  assert.equal(await store.lead(), true);
+});
+
 test("profit leaves out deposits and withdrawals", async () => {
   delete process.env.DATABASE_URL;
   process.env.DATA_DIR = mkdtempSync(`${tmpdir()}/pillees-`);

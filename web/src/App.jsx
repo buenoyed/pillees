@@ -387,7 +387,7 @@ function Coin() {
 const TRADE_STEPS = [
   ["Watch", "The bot watches the price of a coin on Pump and in an outside pool, all the time."],
   ["Spot the gap", "When the same coin is cheaper in one place than the other, after every fee, that is the gap."],
-  ["Buy cheap, sell high", "It buys where it is cheap and sells where it is expensive. The Pump side is one multi_hop_swap."],
+  ["Buy cheap, sell high", "It buys where it is cheap and sells where it is expensive, both in one transaction. If the sell would come back short, the whole thing is undone."],
   ["Keep the difference", "The gap is the profit. It stays in the bot wallet, where anyone can check it."],
 ];
 
@@ -431,7 +431,7 @@ function Protocol() {
           <li>Only the owner wallet can start, stop or withdraw, by signing a message. Signing costs nothing.</li>
           <li>Withdrawals always go to the owner wallet, nowhere else.</li>
           <li>The bot’s coin is a normal pump.fun coin with the bot as creator. Its creator fees go to the bot.</li>
-          <li>The multi-hop trading engine is rolling out to bots. Until it reaches a bot, that bot collects its coin’s creator fees.</li>
+          <li>The engine trades only when a gap beats every fee plus the bot’s minimum edge. On busy coins that is rare, so a bot can go a while without trading. <Link to="/docs#engine">How the engine works</Link></li>
         </ul>
       </article>
 
