@@ -66,7 +66,7 @@ export function Sdk() {
     <section className="dev">
       <header className="page-head">
         <p className="eyebrow">@pillees/sdk · v0.1.0</p>
-        <h1>The route math, as a library.</h1>
+        <h1>The route math, as a library</h1>
         <p>
           The same code the capsules use: <code>multi_hop_swap</code> rules, quotes with fees once per
           route, the account layout, instruction data and an edge finder. No dependencies. Runs in Node
@@ -246,7 +246,7 @@ export function PumpDocs() {
     <section className="dev">
       <header className="page-head">
         <p className="eyebrow">Pump docs · live embed</p>
-        <h1>multi_hop_swap, straight from Pump.</h1>
+        <h1>multi_hop_swap, from Pump’s docs</h1>
         <p>
           This loads Pump’s own doc from{" "}
           <a href={DOCS.repo}>pump-fun/pump-public-docs</a> each time, so it is always the current
@@ -337,7 +337,7 @@ export function RunLocally() {
     <section className="dev">
       <header className="page-head">
         <p className="eyebrow">Run locally</p>
-        <h1>Run Pillees on your machine.</h1>
+        <h1>Run Pillees locally</h1>
         <p>
           Every command here works on a fresh clone: the CLI, the SDK tests, this website and the videos.
           You need Node 18 or newer (20+ is better) and git. Nothing here signs or sends a transaction.

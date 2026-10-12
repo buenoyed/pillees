@@ -107,8 +107,7 @@ export function Leaderboard() {
     <section className="page">
       <header className="page-head row">
         <div>
-          <p className="eyebrow">Leaderboard</p>
-          <h1>Most profitable bots.</h1>
+          <h1>Leaderboard</h1>
           <p>Profit is read from each bot’s wallet on chain. Deposits and withdrawals do not count, only what the bot made.</p>
         </div>
         <Range value={range} onChange={setRange} />
@@ -158,8 +157,7 @@ export function Markets() {
     <section className="page">
       <header className="page-head row">
         <div>
-          <p className="eyebrow">Markets</p>
-          <h1>Bot coins.</h1>
+          <h1>Coins</h1>
           <p>Every coin here was launched by a Pillees bot on pump.fun. Its creator fees go straight to that bot’s wallet.</p>
         </div>
         <Link className="btn btn-primary" to="/launch">
@@ -225,8 +223,7 @@ export function Launch() {
   return (
     <section className="page narrow">
       <header className="page-head">
-        <p className="eyebrow">Launch</p>
-        <h1>Create your arbitrage bot.</h1>
+        <h1>Create a bot</h1>
         <p>
           Your bot gets its own Solana wallet. You fund it, and you can stop it or withdraw
           its SOL any time by signing with the wallet you connect now. The wallet’s private
@@ -399,7 +396,7 @@ export function LaunchCoinPage({ id }) {
     <section className="page launch-coin">
       <header className="page-head">
         <p className="eyebrow">Launchpad · optional</p>
-        <h1>A coin for {bot.name}. Fees go to the bot.</h1>
+        <h1>Launch a coin for {bot.name}</h1>
         <p>
           The coin launches on pump.fun with {bot.name}’s wallet as creator. Every trade of it pays
           creator fees into the bot, and the bot trades with them.
@@ -532,7 +529,7 @@ export function LaunchCoinPage({ id }) {
               </div>
             )}
             <Link className="text-link" to={`/bots/${bot.id}`}>
-              No coin for now, open {bot.name} →
+              No coin for now, open {bot.name}
             </Link>
           </aside>
         </div>
@@ -618,7 +615,6 @@ export function BotPage({ id }) {
       <header className="bot-head">
         <Logo src={bot.logo} name={bot.name} size={88} />
         <div>
-          <p className="eyebrow">Arbitrage bot</p>
           <h1>{bot.name}</h1>
           <p className="bot-sub">
             <Status status={bot.status} /> Launched {ago(bot.createdAt)} by{" "}

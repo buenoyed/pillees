@@ -64,6 +64,67 @@ export const useWallet = () => useContext(WalletContext);
 
 export const short = (address) => (address ? `${address.slice(0, 4)}…${address.slice(-4)}` : "");
 
+export function WalletMenu() {
+  const { address, connect, disconnect } = useWallet();
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event) => {
+      if (!event.target.closest?.(".wallet-menu")) setOpen(false);
+    };
+    const escape = (event) => event.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+
+  if (!address) {
+    return (
+      <button type="button" className="wallet-btn" onClick={() => connect().catch((e) => setNote(e.message))} title={note || undefined}>
+        Connect wallet
+      </button>
+    );
+  }
+  return (
+    <div className="wallet-menu">
+      <button type="button" className="wallet-btn on" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)}>
+        <i aria-hidden="true" />
+        {short(address)}
+      </button>
+      {open && (
+        <div className="wallet-pop" role="menu">
+          <code>{address}</code>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => navigator.clipboard?.writeText(address).then(() => setOpen(false))}
+          >
+            Copy address
+          </button>
+          <a role="menuitem" href={`https://solscan.io/account/${address}`} target="_blank" rel="noreferrer">
+            View on Solscan
+          </a>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              disconnect();
+            }}
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ConnectButton({ className = "btn btn-ghost" }) {
   const { address, connect, disconnect } = useWallet();
   const [error, setError] = useState("");

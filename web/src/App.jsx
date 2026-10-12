@@ -7,15 +7,14 @@ import { PumpDocs, RunLocally, Sdk } from "./devpages";
 import { GitHubIcon, PumpIcon, XIcon } from "./icons";
 import { BotPage, BotTable, CoinGrid, Launch, LaunchCoinPage, Leaderboard, Markets } from "./platform";
 import { Link, PATH, isHome, useRoute } from "./router";
-import { ConnectButton } from "./wallet";
+import { WalletMenu } from "./wallet";
 
 const NAV = [
-  { id: "home", label: "Home", icon: "M2.5 7.5 8 2.5l5.5 5v6h-4v-4h-3v4h-4z" },
-  { id: "markets", label: "Markets", icon: "M2.5 13.5h11M4 11V7.5M7 11V4.5M10 11V6.5M13 11V3" },
-  { id: "leaderboard", label: "Leaderboard", icon: "M5 2.5h6v4a3 3 0 0 1-6 0zM5 4H2.5a2.5 2.5 0 0 0 2.6 3M11 4h2.5a2.5 2.5 0 0 1-2.6 3M8 9.5v3M5.5 13.5h5" },
-  { id: "launch", label: "Launch", icon: "M8 1.8c2.6 1.6 3.6 4.4 3 7.7H5c-.6-3.3.4-6.1 3-7.7zM5 9.5 3.2 12h2.4M11 9.5l1.8 2.5h-2.4M8 11.5v2.7" },
-  { id: "protocol", label: "How it works", icon: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5" },
-  { id: "docs", label: "Pump docs", icon: "M2.5 3h4a2 2 0 0 1 1.5.7A2 2 0 0 1 9.5 3h4v10h-4a1.5 1.5 0 0 0-1.5 1.2A1.5 1.5 0 0 0 6.5 13h-4zM8 3.7v10.5" },
+  { id: "launch", label: "Create a bot" },
+  { id: "leaderboard", label: "Leaderboard" },
+  { id: "markets", label: "Coins" },
+  { id: "protocol", label: "How it works" },
+  { id: "docs", label: "Docs" },
 ];
 
 const TITLES = {
@@ -58,30 +57,34 @@ export default function App() {
           Skip to content
         </a>
         <header className="nav">
-          <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
-            <img src="/pillee.png" alt="" width="42" height="48" />
-            <span>Pillees</span>
-          </Link>
-          <nav id="primary-nav" className={menuOpen ? "links open" : "links"} aria-label="Primary">
-            {NAV.map((item) => (
-              <Link key={item.id} to={PATH[item.id]} aria-current={view === item.id ? "page" : undefined}>
-                <svg className="nav-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-                  <path d={item.icon} />
+          <div className="nav-inner">
+            <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
+              <img src="/pillee.png" alt="" width="28" height="32" />
+              <span>Pillees</span>
+            </Link>
+            <nav id="primary-nav" className={menuOpen ? "links open" : "links"} aria-label="Primary">
+              {NAV.map((item) => (
+                <Link key={item.id} to={PATH[item.id]} aria-current={view === item.id ? "page" : undefined}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="nav-right">
+              <WalletMenu />
+              <button
+                className="menu"
+                type="button"
+                aria-expanded={menuOpen}
+                aria-controls="primary-nav"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                onClick={() => setMenuOpen((open) => !open)}
+              >
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                  <path d={menuOpen ? "M3.5 3.5l9 9M12.5 3.5l-9 9" : "M2.5 4.5h11M2.5 8h11M2.5 11.5h11"} />
                 </svg>
-                {item.label}
-              </Link>
-            ))}
-            <ConnectButton className="btn btn-primary nav-cta" />
-          </nav>
-          <button
-            className="menu"
-            type="button"
-            aria-expanded={menuOpen}
-            aria-controls="primary-nav"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            {menuOpen ? "Close" : "Menu"}
-          </button>
+              </button>
+            </div>
+          </div>
         </header>
         <div className="page">
           <main id="content">
@@ -151,30 +154,26 @@ function Home() {
   return (
     <>
       <Hero />
-      <Steps />
-      <section className="home-block" aria-labelledby="new-coins">
-        <div className="block-head">
-          <div>
-            <p className="eyebrow">Just launched</p>
-            <h2 id="new-coins">Bot coins</h2>
-          </div>
-          <Link className="text-link" to="/markets">
-            All coins →
-          </Link>
-        </div>
-        {coins.loading && !coins.data ? <div className="skeleton" /> : <CoinGrid coins={coins.data?.coins ?? []} limit={6} />}
-      </section>
       <section className="home-block" aria-labelledby="top-bots">
         <div className="block-head">
-          <div>
-            <p className="eyebrow">Leaderboard · 7 days</p>
-            <h2 id="top-bots">Top bots</h2>
-          </div>
+          <h2 id="top-bots">Top bots</h2>
+          <span className="dim">Last 7 days</span>
           <Link className="text-link" to="/leaderboard">
-            Full leaderboard →
+            View all
           </Link>
         </div>
         {bots.loading && !bots.data ? <div className="skeleton" /> : <BotTable bots={bots.data?.bots ?? []} limit={5} />}
+      </section>
+      <Steps />
+      <section className="home-block" aria-labelledby="new-coins">
+        <div className="block-head">
+          <h2 id="new-coins">New bot coins</h2>
+          <span className="dim">From the launchpad</span>
+          <Link className="text-link" to="/markets">
+            View all
+          </Link>
+        </div>
+        {coins.loading && !coins.data ? <div className="skeleton" /> : <CoinGrid coins={coins.data?.coins ?? []} limit={6} />}
       </section>
       <WhatShipped />
       <Coin />
@@ -187,7 +186,7 @@ function Hero() {
     <section className="hero">
       <div className="hero-copy">
         <p className="eyebrow">Built on Pump’s multi-hop swap</p>
-        <h1>Create your own arbitrage bot.</h1>
+        <h1>Create your own arbitrage bot</h1>
         <p className="lede">
           Pick a name and a logo, set its limits, fund it. Your bot gets its own public wallet
           that anyone can track, and you control it with your wallet: stop it or withdraw any
@@ -206,18 +205,6 @@ function Hero() {
       <div className="hero-art">
         <div className="tilt">
           <HeroPillee />
-          <div className="orbit" aria-hidden="true">
-            <span style={{ "--i": 0 }}>SOL</span>
-            <span style={{ "--i": 1 }}>MOSS</span>
-            <span style={{ "--i": 2 }}>PILL</span>
-          </div>
-        </div>
-        <div className="route-float" aria-hidden="true">
-          <span>SOL</span>
-          <i>pool</i>
-          <span>MOSS</span>
-          <i>curve</i>
-          <span>PILL</span>
         </div>
       </div>
     </section>
@@ -285,7 +272,7 @@ function WhatShipped() {
         </div>
       </div>
       <Link className="text-link" to="/protocol">
-        How the bot trades it →
+        How the bot trades it
       </Link>
     </section>
   );
@@ -336,8 +323,7 @@ function Protocol() {
   return (
     <section className="page protocol">
       <header className="page-head">
-        <p className="eyebrow">How it works</p>
-        <h1>What a Pillees bot does.</h1>
+        <h1>How it works</h1>
         <p>
           Bots trade price gaps through Pump’s <code>multi_hop_swap</code>. The rules below come
           from Pump’s docs in <a href={DOCS.repo}>pump-fun/pump-public-docs</a>. If this page and
@@ -429,9 +415,9 @@ function Footer() {
         </div>
       </div>
       <div className="foot-links">
-        <Link to="/launch">Launch</Link>
+        <Link to="/launch">Create a bot</Link>
         <Link to="/leaderboard">Leaderboard</Link>
-        <Link to="/markets">Markets</Link>
+        <Link to="/markets">Coins</Link>
         <Link to="/protocol">How it works</Link>
         <Link to="/docs">Pump docs</Link>
         <Link to="/sdk">SDK</Link>

@@ -40,8 +40,8 @@ export const solscan = (kind, value) => `https://solscan.io/${kind}/${value}`;
 
 export function fmtSol(n, signed = false) {
   const abs = Math.abs(n);
-  const digits = abs >= 100 ? 1 : abs >= 1 ? 2 : abs === 0 ? 2 : 4;
-  const text = abs.toFixed(digits);
+  const digits = abs >= 1000 ? 0 : abs >= 0.01 || abs === 0 ? 2 : 4;
+  const text = abs.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
   if (!signed) return text;
   return n > 0 ? `+${text}` : n < 0 ? `−${text}` : text;
 }
