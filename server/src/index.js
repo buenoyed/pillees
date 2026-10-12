@@ -21,6 +21,9 @@ const LAUNCH_RESERVE = 0.025;
 const RANGES = { "24H": 864e5, "7D": 6048e5, "30D": 2592e6, ALL: Infinity };
 
 checkSecret();
+if (process.env.RAILWAY_ENVIRONMENT && !process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is empty. On Railway it must reference Postgres: ${{Postgres.DATABASE_URL}}. Bot wallets would be lost on the next deploy.");
+}
 const store = await openStore();
 
 class HttpError extends Error {
