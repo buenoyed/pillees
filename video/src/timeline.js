@@ -6,14 +6,17 @@ export const HEIGHT = 1080;
 export const SCENES = {
   hook: [0, 180],
   drop: [180, 300],
-  board: [300, 480],
-  step1: [480, 600],
-  step2: [600, 720],
-  step3: [720, 900],
+  home: [300, 480],
+  create: [480, 600],
+  multihop: [600, 720],
+  trade: [720, 900],
   montage: [900, 1080],
   outro: [1080, 1320],
 };
 export const TOTAL = 1320;
+
+// Each scene starts PAD frames early and ends PAD frames late, so neighbours crossfade.
+export const PAD = 10;
 
 export const C = {
   bg: "#0b0c0e",

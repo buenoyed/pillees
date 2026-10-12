@@ -549,7 +549,7 @@ withdraw <bot id>
               <pre>
                 <code>{`git clone ${LINKS.github}
 cd pillees && npm install
-cp .env.example .env        # set BOT_KEY_SECRET and RPC_URL
+touch .env                  # set BOT_KEY_SECRET and RPC_URL
 npm run build -w @pillees/web
 npm start                   # http://localhost:8080`}</code>
               </pre>

@@ -50,7 +50,18 @@ Without `DATABASE_URL` the server keeps its data in `server/.data/db.json`. In p
 
 ## Config
 
-Copy `.env.example` to `.env` at the repo root and fill it in. It holds the official coin (name, ticker, contract address), the socials, and the server settings (RPC, database, key secret). `VITE_` values are built into the public site; the rest never leave the server. On Railway, set the same names under the `pillees` service variables.
+Create a `.env` at the repo root (it is ignored by git). `VITE_` values are built into the public site, so only put public things there; the rest never leave the server. On Railway, set the same names under the `pillees` service variables.
+
+| Variable | What it is |
+|---|---|
+| `VITE_SITE_URL` | Public URL, `https://pillees.fun` by default |
+| `VITE_COIN_NAME`, `VITE_COIN_TICKER` | The official coin |
+| `VITE_COIN_CA` | Coin contract address. Leave empty until launch |
+| `VITE_X_URL`, `VITE_GITHUB_URL` | Social links |
+| `RPC_URL` | Solana mainnet RPC (server only) |
+| `DATABASE_URL` | Postgres. Leave empty locally to use `server/.data`. On Railway it is `${{Postgres.DATABASE_URL}}` |
+| `BOT_KEY_SECRET` | 64 hex characters that encrypt bot keys (`openssl rand -hex 32`). Back it up |
+| `ENGINE` | `off` stops all trading; tracking, fee claims and withdrawals keep working |
 
 ## The CLI
 

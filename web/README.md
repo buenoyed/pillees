@@ -25,7 +25,7 @@ npm run build        # web/dist
 | `/sdk` | `@pillees/sdk` docs |
 | `/run` | Commands to run everything locally |
 
-The coin contract address, X and GitHub links come from the root `.env` (see `.env.example`). The pump.fun link points at the coin once `VITE_COIN_CA` is set.
+The coin contract address, X and GitHub links come from the root `.env` (see Config in the root README). The pump.fun link points at the coin once `VITE_COIN_CA` is set.
 
 Old `/#protocol` style links redirect to the path.
 

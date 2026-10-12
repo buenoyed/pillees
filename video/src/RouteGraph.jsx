@@ -1,53 +1,64 @@
-import { Easing, interpolate, useCurrentFrame } from "remotion";
 import { DISPLAY, MONO, SANS } from "./fonts";
 import { C } from "./timeline";
-import { ease } from "./ui";
+import { EXPO, INOUT, ease, useT } from "./ui";
 
-const W = 1020;
-const H = 660;
+const W = 1000;
+const H = 640;
 const NODES = [
-  { id: "SOL", x: 170, sub: "your currency" },
-  { id: "MOSS", x: 510, sub: "pump coin" },
-  { id: "PILL", x: 850, sub: "target" },
+  { id: "SOL", x: 160, sub: "you pay" },
+  { id: "PUMP", x: 500, sub: "pump coin" },
+  { id: "COIN", x: 840, sub: "paired with PUMP" },
 ];
-const NODE_Y = 270;
-const R = 74;
-const HOPS = ["bonding curve", "PumpSwap pool"];
+const NODE_Y = 230;
+const R = 70;
 
-function Node({ node, lit, pulse, price, f }) {
-  const glow = 0.25 + lit * 0.75;
+function Node({ node, lit, pulse }) {
   return (
     <g transform={`translate(${node.x} ${NODE_Y})`}>
-      <circle r={R + 22 + pulse * 40} fill="none" stroke={C.mint} strokeOpacity={pulse ? (1 - pulse) * 0.6 : 0} strokeWidth="3" />
-      <circle r={R} fill={lit > 0.5 ? "#173225" : C.panel2} stroke={C.mint} strokeOpacity={0.3 + lit * 0.7} strokeWidth="3" style={{ filter: `drop-shadow(0 0 ${24 * glow}px rgba(74,222,128,${0.5 * glow}))` }} />
-      <text y="12" textAnchor="middle" fontFamily={DISPLAY} fontWeight="700" fontSize="36" fill={C.ink}>
+      <circle r={R + 18 + pulse * 46} fill="none" stroke={C.mint} strokeOpacity={pulse ? (1 - pulse) * 0.55 : 0} strokeWidth="3" />
+      <circle
+        r={R}
+        fill={lit > 0.5 ? "#173225" : C.panel2}
+        stroke={C.mint}
+        strokeOpacity={0.25 + lit * 0.75}
+        strokeWidth="3"
+        style={{ filter: `drop-shadow(0 0 ${8 + 22 * lit}px rgba(74,222,128,${0.15 + 0.45 * lit}))` }}
+      />
+      <text y="12" textAnchor="middle" fontFamily={DISPLAY} fontWeight="700" fontSize="34" fill={C.ink}>
         {node.id}
       </text>
-      <text y={R + 46} textAnchor="middle" fontFamily={MONO} fontSize="19" letterSpacing="2" fill={C.dim}>
+      <text y={R + 44} textAnchor="middle" fontFamily={MONO} fontSize="18" letterSpacing="2" fill={C.dim}>
         {node.sub.toUpperCase()}
       </text>
-      {price && (
-        <text y={-R - 26} textAnchor="middle" fontFamily={MONO} fontSize="22" fill={C.mint} opacity={ease(f, [10, 22], [0, 1])}>
-          {price}
-        </text>
-      )}
     </g>
   );
 }
 
-// mode "watch": quotes tick and the edge meter crosses the minimum.
-// mode "swap": a single instruction carries value through every hop.
-export function RouteGraph({ mode }) {
-  const f = useCurrentFrame();
-  const draw = mode === "watch" ? ease(f, [6, 34], [0, 1], Easing.out(Easing.cubic)) : 1;
-  const packet = mode === "swap" ? ease(f, [14, 74], [0, 1], Easing.inOut(Easing.cubic)) : -1;
-  const packetX = 170 + packet * 680;
-  const flick = (seed, base) => (base + Math.sin(f * 0.7 + seed) * 0.000003 + Math.sin(f * 0.23 + seed * 3) * 0.000004).toFixed(6);
-  const edge = mode === "watch" ? Math.round(ease(f, [30, 92], [0, 110], Easing.out(Easing.quad))) : 110;
-  const meter = edge / 140;
-  const cleared = edge >= 40;
-  const done = mode === "swap" ? ease(f, [74, 84], [0, 1]) : 0;
+function Compare({ t }) {
+  const p = ease(t, [72, 92], [0, 1], EXPO);
+  const strike = ease(t, [84, 100], [0, 1], INOUT);
+  const row = (label, value, good) => (
+    <div style={{ flex: 1, padding: "18px 22px", borderRadius: 18, border: `1px solid ${good ? "rgba(134,239,172,0.45)" : C.line}`, background: good ? "rgba(22,48,36,0.6)" : "#121317" }}>
+      <div style={{ fontFamily: MONO, fontSize: 17, letterSpacing: 2, color: good ? C.mint : C.dim }}>{label}</div>
+      <div style={{ position: "relative", display: "inline-block", fontFamily: SANS, fontWeight: 600, fontSize: 28, color: good ? C.ink : C.muted, marginTop: 8 }}>
+        {value}
+        {!good && <span style={{ position: "absolute", left: 0, top: "52%", height: 3, width: `${strike * 100}%`, background: C.down, borderRadius: 2 }} />}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ position: "absolute", left: 34, right: 34, bottom: 30, display: "flex", gap: 18, opacity: p, transform: `translateY(${(1 - p) * 24}px)` }}>
+      {row("TWO SEPARATE TRADES", "Fees on every hop", false)}
+      {row("MULTI_HOP_SWAP", "Fees once per route", true)}
+    </div>
+  );
+}
 
+export function RouteGraph() {
+  const t = useT();
+  const draw = ease(t, [0, 26], [0, 1], EXPO);
+  const packet = ease(t, [20, 70], [0, 1], INOUT);
+  const packetX = NODES[0].x + packet * (NODES[2].x - NODES[0].x);
   return (
     <div
       style={{
@@ -61,113 +72,57 @@ export function RouteGraph({ mode }) {
         overflow: "hidden",
       }}
     >
-      <div style={{ position: "absolute", left: 36, top: 30, display: "flex", gap: 14, alignItems: "center" }}>
-        <span style={{ fontFamily: MONO, fontSize: 20, letterSpacing: 3, color: C.mint }}>
-          {mode === "watch" ? "QUOTING ROUTE" : "MULTI_HOP_SWAP · 1 INSTRUCTION"}
-        </span>
-        <span style={{ width: 10, height: 10, borderRadius: 5, background: C.mint, opacity: 0.4 + 0.6 * Math.abs(Math.sin(f / 6)) }} />
+      <div style={{ position: "absolute", left: 34, top: 28, display: "flex", gap: 14, alignItems: "center" }}>
+        <span style={{ fontFamily: MONO, fontSize: 19, letterSpacing: 3, color: C.mint }}>MULTI_HOP_SWAP · 1 INSTRUCTION</span>
+        <span style={{ width: 10, height: 10, borderRadius: 5, background: C.mint, opacity: 0.45 + 0.55 * Math.abs(Math.sin(t / 9)) }} />
       </div>
-      <div style={{ position: "absolute", right: 36, top: 28, fontFamily: MONO, fontSize: 20, color: C.dim, letterSpacing: 2 }}>
-        ALL BUYS · 2 HOPS
-      </div>
+      <div style={{ position: "absolute", right: 34, top: 28, fontFamily: MONO, fontSize: 19, color: C.dim, letterSpacing: 2 }}>2 PUMPSWAP POOLS</div>
       <svg width={W} height={H} style={{ position: "absolute", inset: 0 }}>
         {[0, 1].map((i) => {
           const x1 = NODES[i].x + R;
           const x2 = NODES[i + 1].x - R;
           const p = Math.max(0, Math.min(1, draw * 2 - i));
-          const passed = packet > 0 ? Math.max(0, Math.min(1, (packetX - x1) / (x2 - x1))) : 0;
+          const passed = Math.max(0, Math.min(1, (packetX - x1) / (x2 - x1)));
           return (
             <g key={i}>
               <line x1={x1} y1={NODE_Y} x2={x2} y2={NODE_Y} stroke={C.line} strokeWidth="6" strokeLinecap="round" />
-              <line x1={x1} y1={NODE_Y} x2={x1 + (x2 - x1) * p} y2={NODE_Y} stroke={C.mint} strokeOpacity="0.45" strokeWidth="4" strokeDasharray="2 14" strokeLinecap="round" strokeDashoffset={-f * 1.5} />
+              <line x1={x1} y1={NODE_Y} x2={x1 + (x2 - x1) * p} y2={NODE_Y} stroke={C.mint} strokeOpacity="0.4" strokeWidth="4" strokeDasharray="2 14" strokeLinecap="round" strokeDashoffset={-t * 1.2} />
               {passed > 0 && <line x1={x1} y1={NODE_Y} x2={x1 + (x2 - x1) * passed} y2={NODE_Y} stroke={C.mint} strokeWidth="6" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 10px rgba(134,239,172,0.9))" }} />}
-              <text x={(x1 + x2) / 2} y={NODE_Y - 22} textAnchor="middle" fontFamily={MONO} fontSize="19" letterSpacing="1.5" fill={C.muted} opacity={p}>
-                {HOPS[i]}
+              <text x={(x1 + x2) / 2} y={NODE_Y - 22} textAnchor="middle" fontFamily={MONO} fontSize="18" letterSpacing="1.5" fill={C.muted} opacity={p}>
+                PUMPSWAP POOL
               </text>
             </g>
           );
         })}
         {NODES.map((node, i) => {
-          const reached = packet >= 0 ? Math.max(0, Math.min(1, (packetX - node.x + 40) / 40)) : 0;
-          const lit = mode === "watch" ? Math.min(1, draw * 3 - i * 0.6) : reached;
-          const at = 14 + (i / 2) * 60;
-          const pulse = mode === "swap" && f > at && f < at + 18 ? (f - at) / 18 : 0;
-          const prices = mode === "watch" ? [null, flick(1, 0.000412), flick(2, 0.000447)] : [null, null, null];
-          return <Node key={node.id} node={node} lit={Math.max(0, lit)} pulse={pulse} price={prices[i] && `${prices[i]} SOL`} f={f} />;
+          const reached = Math.max(0, Math.min(1, (packetX - node.x + 50) / 50));
+          const at = 20 + (i / 2) * 50;
+          const pulse = t > at && t < at + 22 ? ease(t, [at, at + 22], [0, 1], EXPO) : 0;
+          return <Node key={node.id} node={node} lit={Math.max(Math.min(1, draw * 3 - i) * 0.35, reached)} pulse={pulse} />;
         })}
-        {packet >= 0 && packet < 1 && (
+        {packet > 0 && packet < 1 && (
           <g transform={`translate(${packetX} ${NODE_Y})`}>
-            <rect x="-34" y="-17" width="68" height="34" rx="17" fill={C.mint} style={{ filter: "drop-shadow(0 0 22px rgba(134,239,172,1))" }} />
-            <rect x="-34" y="-17" width="34" height="34" rx="17" fill="#eafff0" />
-            <rect x="-17" y="-17" width="17" height="34" fill="#eafff0" />
+            <circle r="16" fill={C.mint} style={{ filter: "drop-shadow(0 0 18px rgba(134,239,172,1))" }} />
+            <circle r="7" fill="#eafff0" />
           </g>
         )}
       </svg>
-
-      {mode === "swap" && (
-        <div
-          style={{
-            position: "absolute",
-            left: 510 - 170,
-            top: NODE_Y + R + 70,
-            width: 340,
-            textAlign: "center",
-            fontFamily: SANS,
-            fontSize: 24,
-            color: C.mint,
-            opacity: ease(f, [38, 48], [0, 1]),
-            transform: `translateY(${ease(f, [38, 48], [16, 0])}px)`,
-          }}
-        >
-          never lands in the wallet
-        </div>
-      )}
-
-      <div style={{ position: "absolute", left: 36, right: 36, bottom: 34 }}>
-        {mode === "watch" ? (
-          <>
-            <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 20, color: C.muted, marginBottom: 14, letterSpacing: 1 }}>
-              <span>EDGE AFTER FEES</span>
-              <span style={{ color: cleared ? C.mint : C.ink, fontSize: 30, fontFamily: DISPLAY, fontWeight: 700 }}>+{edge} bps</span>
-            </div>
-            <div style={{ position: "relative", height: 22, borderRadius: 11, background: "#1d1f24", overflow: "visible" }}>
-              <div style={{ width: `${meter * 100}%`, height: "100%", borderRadius: 11, background: cleared ? `linear-gradient(90deg, ${C.leaf}, ${C.mint})` : "#3f3f46", boxShadow: cleared ? "0 0 30px rgba(134,239,172,0.55)" : undefined }} />
-              <div style={{ position: "absolute", left: `${(40 / 140) * 100}%`, top: -10, bottom: -10, width: 3, background: C.ink, opacity: 0.8 }} />
-              <div style={{ position: "absolute", left: `${(40 / 140) * 100}%`, top: 34, transform: "translateX(-50%)", fontFamily: MONO, fontSize: 18, color: C.dim, whiteSpace: "nowrap" }}>
-                YOUR MIN 40
-              </div>
-            </div>
-          </>
-        ) : (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", opacity: done, transform: `translateY(${(1 - done) * 20}px)` }}>
-            <span style={{ fontFamily: MONO, fontSize: 20, color: C.muted, letterSpacing: 1 }}>ROUTE CLEARED · MIN_AMOUNT_OUT CHECKED ONCE</span>
-            <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 34, color: C.mint, textShadow: "0 0 30px rgba(134,239,172,0.5)" }}>
-              +110 bps
-            </span>
-          </div>
-        )}
+      <div
+        style={{
+          position: "absolute",
+          left: 500 - 200,
+          top: NODE_Y + R + 66,
+          width: 400,
+          textAlign: "center",
+          fontFamily: SANS,
+          fontSize: 23,
+          color: C.mint,
+          opacity: ease(t, [44, 56], [0, 1]),
+        }}
+      >
+        PUMP never lands in your wallet
       </div>
-      {mode === "watch" && cleared && (
-        <div
-          style={{
-            position: "absolute",
-            right: 36,
-            top: 74,
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: C.mint,
-            color: "#05210f",
-            fontFamily: MONO,
-            fontWeight: 500,
-            fontSize: 20,
-            letterSpacing: 2,
-            transform: `scale(${interpolate(f, [43, 49, 53], [0.6, 1.12, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
-            opacity: ease(f, [43, 47], [0, 1]),
-          }}
-        >
-          EDGE CLEARS
-        </div>
-      )}
+      <Compare t={t} />
     </div>
   );
 }
