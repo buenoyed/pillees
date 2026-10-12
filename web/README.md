@@ -20,7 +20,8 @@ npm run build        # web/dist
 | `/leaderboard` | Bots ranked by on-chain profit, 24H / 7D / 30D / ALL |
 | `/markets` | Every bot coin with market cap |
 | `/protocol` | How a bot trades, custody, and the multi-hop rules and fees |
-| `/docs` | Pump's `MULTI_HOP_SWAP.md`, fetched live from pump-public-docs (its synthetic migration section is left out) |
+| `/docs` | Pillees docs: bots, funding, limits, coin launch, creator fees, custody, profit, public API, FAQ |
+| `/pump` | Pump's `MULTI_HOP_SWAP.md`, fetched live from pump-public-docs (its synthetic migration section is left out) |
 | `/sdk` | `@pillees/sdk` docs |
 | `/run` | Commands to run everything locally |
 

@@ -443,7 +443,7 @@ COMP=Teaser node scripts/render.mjs
         <p>
           Why the pump side is one instruction: <code>multi_hop_swap</code> charges fees once per route,
           checks slippage once, and never opens a token account for the middle coin. Pump’s doc is
-          embedded on the <Link to="/docs">Pump docs page</Link>.
+          embedded on the <Link to="/pump">Pump docs page</Link>.
         </p>
       </article>
 

@@ -4,6 +4,7 @@ import Intro from "./Intro";
 import { useApi } from "./api";
 import { COIN, DOCS, LINKS } from "./data";
 import { PumpDocs, RunLocally, Sdk } from "./devpages";
+import { PilleesDocs } from "./docs";
 import { Profile, Search } from "./explore";
 import { GitHubIcon, PumpIcon, XIcon } from "./icons";
 import { BotPage, BotTable, CoinGrid, Launch, LaunchCoinPage, Leaderboard, Markets } from "./platform";
@@ -17,6 +18,7 @@ const ICONS = {
   profile: "M8 8a2.75 2.75 0 1 0 0-5.5A2.75 2.75 0 0 0 8 8zM2.75 13.75c.6-2.5 2.7-4 5.25-4s4.65 1.5 5.25 4",
   protocol: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5",
   docs: "M2.5 3h4a2 2 0 0 1 1.5.7A2 2 0 0 1 9.5 3h4v10h-4a1.5 1.5 0 0 0-1.5 1.2A1.5 1.5 0 0 0 6.5 13h-4zM8 3.7v10.5",
+  pump: "M3.6 12.4a2.6 2.6 0 0 1 0-3.7l5.1-5.1a2.6 2.6 0 0 1 3.7 3.7l-5.1 5.1a2.6 2.6 0 0 1-3.7 0zM6.15 6.15l3.7 3.7",
   sdk: "M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4M9.2 2.5 6.8 13.5",
 };
 
@@ -26,23 +28,10 @@ const NAV = [
   { id: "markets", label: "Coins" },
   { id: "profile", label: "Profile" },
   { id: "protocol", label: "How it works" },
-  { id: "docs", label: "Pump docs" },
+  { id: "docs", label: "Docs" },
+  { id: "pump", label: "Pump docs" },
   { id: "sdk", label: "SDK" },
 ];
-
-const TITLES = {
-  home: "Create your own arbitrage bot",
-  markets: "Coins",
-  leaderboard: "Leaderboard",
-  launch: "Create a bot",
-  bot: "Bot",
-  coin: "Launch a coin",
-  profile: "Profile",
-  protocol: "How it works",
-  docs: "Pump docs",
-  sdk: "SDK",
-  run: "Run locally",
-};
 
 const SOCIALS = [
   LINKS.x && { id: "x", label: "X", url: LINKS.x, Icon: XIcon },
@@ -89,7 +78,6 @@ export default function App() {
   const close = () => setMenuOpen(false);
 
   useEffect(() => {
-    document.title = `Pillees — ${TITLES[view] || TITLES.home}`;
     setMenuOpen(false);
     window.scrollTo(0, 0);
   }, [view, route.id]);
@@ -165,7 +153,8 @@ export default function App() {
               {view === "profile" && (route.id ? <Profile address={route.id} /> : <ConnectProfile />)}
               {view === "protocol" && <Protocol />}
               {view === "sdk" && <Sdk />}
-              {view === "docs" && <PumpDocs />}
+              {view === "docs" && <PilleesDocs />}
+              {view === "pump" && <PumpDocs />}
               {view === "run" && <RunLocally />}
             </div>
           </main>
@@ -483,7 +472,7 @@ function Protocol() {
           in the middle charge nothing.
         </p>
         <p>
-          <Link to="/docs">Read Pump’s full doc</Link>
+          <Link to="/pump">Read Pump’s full doc</Link>
           {" · "}
           <a href={DOCS.multiHop}>on GitHub</a>
         </p>
@@ -507,7 +496,8 @@ function Footer() {
         <Link to="/leaderboard">Leaderboard</Link>
         <Link to="/markets">Coins</Link>
         <Link to="/protocol">How it works</Link>
-        <Link to="/docs">Pump docs</Link>
+        <Link to="/docs">Docs</Link>
+        <Link to="/pump">Pump docs</Link>
         <Link to="/sdk">SDK</Link>
         <Link to="/run">Run locally</Link>
       </div>

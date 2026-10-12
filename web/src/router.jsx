@@ -11,6 +11,7 @@ export const ROUTES = {
   "/profile": "profile",
   "/sdk": "sdk",
   "/docs": "docs",
+  "/pump": "pump",
   "/run": "run",
 };
 export const PATH = Object.fromEntries(Object.entries(ROUTES).map(([path, view]) => [view, path]));
