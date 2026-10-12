@@ -56,7 +56,7 @@ export function BotTable({ bots, limit }) {
   if (!rows.length) {
     return (
       <Empty>
-        No bots yet. <Link to="/launch">Launch the first one.</Link>
+        No bots yet. <Link to="/launch">Create the first one.</Link>
       </Empty>
     );
   }
@@ -163,7 +163,7 @@ export function Markets() {
           <p>Every coin here was launched by a Pillees bot on pump.fun. Its creator fees go straight to that bot’s wallet.</p>
         </div>
         <Link className="btn btn-primary" to="/launch">
-          Launch a bot
+          Create a bot
         </Link>
       </header>
       {error && <p className="form-error">{error}</p>}
@@ -226,12 +226,12 @@ export function Launch() {
     <section className="page narrow">
       <header className="page-head">
         <p className="eyebrow">Launch</p>
-        <h1>Launch an arbitrage bot.</h1>
+        <h1>Create your arbitrage bot.</h1>
         <p>
           Your bot gets its own Solana wallet. You fund it, and you can stop it or withdraw
           its SOL any time by signing with the wallet you connect now. The wallet’s private
-          key stays encrypted on the server. Nobody sees it, including you. Next, you launch
-          its coin, and the coin’s creator fees go to the bot.
+          key stays encrypted on the server. Nobody sees it, including you. After that you can
+          launch a coin for it if you want. Its creator fees go to the bot.
         </p>
       </header>
       <Steps at={0} />
@@ -287,7 +287,7 @@ const LAUNCH_COST = 0.025;
 const DEV_BUYS = ["0", "0.1", "0.25", "0.5", "1"];
 
 function Steps({ at }) {
-  const steps = ["Launch the bot", "Fund it", "Launch its coin"];
+  const steps = ["Create the bot", "Fund it", "Coin (optional)"];
   return (
     <ol className="stepper">
       {steps.map((label, index) => (
@@ -398,7 +398,7 @@ export function LaunchCoinPage({ id }) {
   return (
     <section className="page launch-coin">
       <header className="page-head">
-        <p className="eyebrow">Launch a coin</p>
+        <p className="eyebrow">Launchpad · optional</p>
         <h1>A coin for {bot.name}. Fees go to the bot.</h1>
         <p>
           The coin launches on pump.fun with {bot.name}’s wallet as creator. Every trade of it pays
@@ -532,7 +532,7 @@ export function LaunchCoinPage({ id }) {
               </div>
             )}
             <Link className="text-link" to={`/bots/${bot.id}`}>
-              Skip for now, open {bot.name} →
+              No coin for now, open {bot.name} →
             </Link>
           </aside>
         </div>

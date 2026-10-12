@@ -19,10 +19,10 @@ const NAV = [
 ];
 
 const TITLES = {
-  home: "Arbitrage bots with their own coins",
+  home: "Create your own arbitrage bot",
   markets: "Markets",
   leaderboard: "Leaderboard",
-  launch: "Launch a bot",
+  launch: "Create a bot",
   bot: "Bot",
   coin: "Launch a coin",
   protocol: "How it works",
@@ -187,15 +187,15 @@ function Hero() {
     <section className="hero">
       <div className="hero-copy">
         <p className="eyebrow">Built on Pump’s multi-hop swap</p>
-        <h1>Launch an arbitrage bot. Give it a coin.</h1>
+        <h1>Create your own arbitrage bot.</h1>
         <p className="lede">
-          Every Pillees bot has its own public wallet and its own pump.fun coin. The coin’s
-          creator fees flow into the bot, so the more it trades, the more the bot has to
-          arbitrage with. You own it with your wallet: stop it or withdraw any time.
+          Pick a name and a logo, set its limits, fund it. Your bot gets its own public wallet
+          that anyone can track, and you control it with your wallet: stop it or withdraw any
+          time. Want more? Launch a pump.fun coin for it, and the coin’s creator fees fund the bot.
         </p>
         <div className="hero-actions">
           <Link className="btn btn-primary" to="/launch">
-            Launch a bot
+            Create your bot
           </Link>
           <Link className="btn btn-ghost" to="/leaderboard">
             Leaderboard
@@ -225,16 +225,16 @@ function Hero() {
 }
 
 const LAUNCH_STEPS = [
-  ["Launch a bot", "Connect your wallet, pick a name and a logo, set its limits. It gets its own Solana wallet. Fund it with SOL."],
-  ["Launch its coin", "From the bot page, launch a pump.fun coin with the bot as creator. One click, signed by you, paid by the bot."],
-  ["Fees fund the bot", "Every trade of the coin pays creator fees to the bot. It collects them and adds them to its trading balance."],
+  ["Create your bot", "Connect your wallet, pick a name and a logo, set its limits. It gets its own Solana wallet."],
+  ["Fund it", "Send it SOL. Its balance, profit and every transaction are public, and it shows up on the leaderboard."],
+  ["Optional: launch its coin", "The launchpad side. Launch a pump.fun coin with the bot as creator, and every trade of it pays creator fees into the bot."],
 ];
 
 function Steps() {
   return (
     <section className="home-block" aria-labelledby="steps-title">
       <p className="eyebrow">How it works</p>
-      <h2 id="steps-title">Three steps</h2>
+      <h2 id="steps-title">Create, fund, and (if you want) launch a coin</h2>
       <ol className="launch-steps">
         {LAUNCH_STEPS.map(([title, text], index) => (
           <li key={title}>
@@ -246,7 +246,7 @@ function Steps() {
       </ol>
       <div className="hero-actions">
         <Link className="btn btn-primary" to="/launch">
-          Launch a bot
+          Create your bot
         </Link>
         <Link className="btn btn-ghost" to="/protocol">
           What the bot trades
@@ -425,7 +425,7 @@ function Footer() {
         <img src="/pillee.png" alt="" width="36" height="42" />
         <div>
           <strong>Pillees</strong>
-          <p>Arbitrage bots with their own coins, on Pump’s multi_hop_swap.</p>
+          <p>Create your own arbitrage bot on Pump’s multi_hop_swap. Launch a coin for it if you want.</p>
         </div>
       </div>
       <div className="foot-links">
