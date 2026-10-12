@@ -10,7 +10,7 @@ import {
   placeCharacter,
   restPose,
   smoothstep,
-} from "../../src/pillee.js";
+} from "../../web/src/pillee.js";
 import { HEIGHT, WIDTH } from "./timeline";
 
 let parts = null;

@@ -1,4 +1,4 @@
-import { bump, clamp01, key, outQuad, restPose, smoothstep } from "../../../src/pillee.js";
+import { bump, clamp01, key, outQuad, restPose, smoothstep } from "../../../web/src/pillee.js";
 
 export const STRIDE = 70;
 

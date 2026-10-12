@@ -1,5 +1,5 @@
 import { AbsoluteFill, Easing, Img, Sequence, staticFile, useCurrentFrame } from "remotion";
-import { hash, smoothstep } from "../../src/pillee.js";
+import { hash, smoothstep } from "../../web/src/pillee.js";
 import { DISPLAY, MONO, SANS } from "./fonts";
 import { Pillee, landingPose, popPose, riseY } from "./Pillee";
 import { RouteGraph } from "./RouteGraph";

@@ -1,0 +1,31 @@
+{
+  "name": "@pillees/sdk",
+  "version": "0.1.0",
+  "description": "Route math, multi_hop_swap accounts and data, and a capsule runner for Pump arbitrage bots.",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "pump",
+    "pumpswap",
+    "multi_hop_swap",
+    "arbitrage",
+    "solana"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

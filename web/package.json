@@ -1,5 +1,5 @@
 {
-  "name": "pillees",
+  "name": "@pillees/web",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@pillees/sdk": "0.1.0",
+    "dompurify": "^3.2.6",
+    "marked": "^16.1.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

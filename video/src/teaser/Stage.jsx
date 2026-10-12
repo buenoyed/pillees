@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { continueRender, delayRender, staticFile } from "remotion";
-import { PARTS, placeCharacter } from "../../../src/pillee.js";
+import { PARTS, placeCharacter } from "../../../web/src/pillee.js";
 
 export const COLORS = {
   green: "hue-rotate(0deg)",

@@ -1,5 +1,6 @@
 export const DOCS = {
   repo: "https://github.com/pump-fun/pump-public-docs",
+  pillees: "https://github.com/buenoyed/pillees",
   multiHop:
     "https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/MULTI_HOP_SWAP.md",
   synthetic:

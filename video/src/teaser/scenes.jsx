@@ -1,5 +1,5 @@
 import { AbsoluteFill, useCurrentFrame } from "remotion";
-import { clamp01, hash, key, lerp, outBack, outQuad, smoothstep } from "../../../src/pillee.js";
+import { clamp01, hash, key, lerp, outBack, outQuad, smoothstep } from "../../../web/src/pillee.js";
 import { cheer, dive, eyes, hang, hop, stand, walk, walking } from "./motion";
 import { Paint, drawChar, drawShadow } from "./Stage";
 import { ARB, CAPSULE, CLIFF, CROWD, CUTS, END, HOP, T, URL, WORD } from "./timeline";

@@ -12,27 +12,18 @@ import {
   strategyName,
 } from "./data";
 import { BotMark, Pnl, RoutePath, StrategyPill } from "./components";
+import { PumpDocs, RunLocally, Sdk } from "./devpages";
+import { Link, PATH, isHome, navigate, useView } from "./router";
 
 const NAV = [
   { id: "board", label: "Board", icon: "M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" },
   { id: "capsules", label: "Capsules", icon: "M5.5 2h5a3.5 3.5 0 0 1 3.5 3.5v5a3.5 3.5 0 0 1-3.5 3.5h-5A3.5 3.5 0 0 1 2 10.5v-5A3.5 3.5 0 0 1 5.5 2zM2 8h12" },
   { id: "pools", label: "Pools", icon: "M8 1.8C10.4 5 12.6 7.4 12.6 10a4.6 4.6 0 0 1-9.2 0C3.4 7.4 5.6 5 8 1.8z" },
   { id: "protocol", label: "Protocol", icon: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5" },
+  { id: "sdk", label: "SDK", icon: "M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4M9.2 2.5 6.8 13.5" },
+  { id: "docs", label: "Pump docs", icon: "M2.5 3h4a2 2 0 0 1 1.5.7A2 2 0 0 1 9.5 3h4v10h-4a1.5 1.5 0 0 0-1.5 1.2A1.5 1.5 0 0 0 6.5 13h-4zM8 3.7v10.5" },
+  { id: "run", label: "Run locally", icon: "M2 3h12v10H2zM4.5 6.5 6.5 8l-2 1.5M8 10h3.5" },
 ];
-
-function useView() {
-  const read = () => {
-    const id = window.location.hash.replace("#", "");
-    return NAV.some((item) => item.id === id) || id === "new" ? id : "board";
-  };
-  const [view, setView] = useState(read);
-  useEffect(() => {
-    const onHash = () => setView(read());
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
-  return view;
-}
 
 export default function App() {
   const view = useView();
@@ -42,7 +33,7 @@ export default function App() {
   const [watches, setWatches] = useState(SEED_WATCHES);
   const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast] = useState("");
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(isHome);
   const [introStage, setIntroStage] = useState("waiting");
 
   const selected = bots.find((bot) => bot.id === selectedId) || null;
@@ -54,6 +45,9 @@ export default function App() {
       pools: "Pools",
       protocol: "Protocol",
       new: "New capsule",
+      sdk: "SDK",
+      docs: "Pump docs",
+      run: "Run locally",
     };
     document.title = `Pillees — ${titles[view] || "Board"}`;
     setMenuOpen(false);
@@ -82,7 +76,7 @@ export default function App() {
   }, [selectedId]);
 
   function go(id) {
-    window.location.hash = id;
+    navigate(PATH[id]);
   }
 
   function addBot(draft) {
@@ -141,26 +135,26 @@ export default function App() {
         Skip to content
       </a>
       <header className="nav">
-        <a className="brand" href="#board" onClick={() => setMenuOpen(false)}>
+        <Link className="brand" to="/" onClick={() => setMenuOpen(false)}>
           <img src="/pillee.png" alt="" width="42" height="48" />
           <span>Pillees</span>
-        </a>
+        </Link>
         <nav id="primary-nav" className={menuOpen ? "links open" : "links"} aria-label="Primary">
           {NAV.map((item) => (
-            <a
+            <Link
               key={item.id}
-              href={`#${item.id}`}
+              to={PATH[item.id]}
               aria-current={view === item.id ? "page" : undefined}
             >
               <svg className="nav-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
                 <path d={item.icon} />
               </svg>
               {item.label}
-            </a>
+            </Link>
           ))}
-          <a className="btn btn-primary nav-cta" href="#new">
+          <Link className="btn btn-primary nav-cta" to="/new">
             New capsule
-          </a>
+          </Link>
         </nav>
         <button
           className="menu"
@@ -189,6 +183,9 @@ export default function App() {
         {view === "pools" && <Pools watches={watches} onCreate={addWatch} />}
         {view === "protocol" && <Protocol />}
         {view === "new" && <Create onCreate={addBot} />}
+        {view === "sdk" && <Sdk />}
+        {view === "docs" && <PumpDocs />}
+        {view === "run" && <RunLocally />}
       </main>
 
       <Footer />
@@ -390,12 +387,12 @@ function Hero() {
           Pump coins and clear the route with one multi-hop swap.
         </p>
         <div className="hero-actions">
-          <a className="btn btn-primary" href="#new">
+          <Link className="btn btn-primary" to="/new">
             Spin up a capsule
-          </a>
-          <a className="btn btn-ghost" href="#protocol">
+          </Link>
+          <Link className="btn btn-ghost" to="/protocol">
             How the route works
-          </a>
+          </Link>
         </div>
         <ul className="stats">
           <li>
@@ -450,9 +447,9 @@ function ProductSplit() {
           <li>Set size, daily spend, and whether hops are curves, pools, or both.</li>
           <li>Optionally attach a coin whose fees refill trading or pay holders.</li>
         </ol>
-        <a className="text-link" href="#new">
+        <Link className="text-link" to="/new">
           Build one on the preview
-        </a>
+        </Link>
       </article>
       <article className="split-card">
         <p className="eyebrow">02 · Liquidity</p>
@@ -469,9 +466,9 @@ function ProductSplit() {
           <li>Pick depth bands, a migration handoff, or a spread dampener.</li>
           <li>Pillees watches the curve, the completing buy, and the pool after migrate.</li>
         </ol>
-        <a className="text-link" href="#pools">
+        <Link className="text-link" to="/pools">
           Open the pools desk
-        </a>
+        </Link>
       </article>
     </section>
   );
@@ -811,9 +808,9 @@ function Create({ onCreate }) {
           <button className="btn btn-primary" type="submit">
             Add to preview board
           </button>
-          <a className="btn btn-ghost" href="#board">
+          <Link className="btn btn-ghost" to="/">
             Back to board
-          </a>
+          </Link>
         </div>
       </form>
     </section>
@@ -1092,10 +1089,11 @@ function Footer() {
         </div>
       </div>
       <div className="foot-links">
-        <a href="#protocol">Protocol</a>
-        <a href={DOCS.repo}>Pump docs</a>
-        <a href={DOCS.multiHop}>multi_hop_swap</a>
-        <a href={DOCS.synthetic}>Synthetic migration</a>
+        <Link to="/protocol">Protocol</Link>
+        <Link to="/sdk">SDK</Link>
+        <Link to="/docs">Pump docs</Link>
+        <Link to="/run">Run locally</Link>
+        <a href={DOCS.pillees}>GitHub</a>
       </div>
       <p className="fine">
         Independent interface. Not affiliated with Pump.fun. Trading can lose money.

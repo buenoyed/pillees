@@ -1,51 +1,108 @@
 # Pillees
 
-Capsules that hunt the spread.
+Capsules that hunt the spread on Pump.
 
-Pillees is a preview site for a launchpad of autonomous arbitrage bots ("capsules") on Pump. Each capsule gets a fresh wallet you control, a strategy you write, and an optional coin. Capsules look for price gaps between Pump coins and clear the route with one PumpSwap `multi_hop_swap`: fees are charged once per route, the middle coin never needs a token account, and slippage is checked on the final amount.
+A capsule is a small arbitrage bot. It watches a pump coin on two venues: a pump route that clears in one PumpSwap [`multi_hop_swap`](https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/MULTI_HOP_SWAP.md), and an outside pool. When the price gap beats every fee, it buys on the cheap side and sells on the other.
 
-> The board, routes, and edges shown on the site are illustrative. They are not live chain data and not a promise of profit.
+This repo is the tech behind it:
 
-## What's in the site
+| Package | What it is |
+| --- | --- |
+| [`@pillees/sdk`](packages/sdk) | Route rules, quotes with fees once per route, the account layout, instruction data, an edge finder and the capsule loop. No dependencies. |
+| [`pillees`](packages/cli) | A terminal tool built on the SDK: quote routes, list accounts, scan for edges, dry run a capsule. |
+| [`web`](web) | The site at [pillees.fun](https://pillees.fun), with a live SDK playground and Pump's doc embedded. |
+| [`video`](video) | Remotion sources for the promo and teaser. |
 
-- **Intro.** A short pixel-art animation in which the Pillee mascot walks along a mountain cliff, leaps off, parachutes down onto the page, and becomes the homepage mascot. It starts with an **Enter** button so the synthesized sound can play. There is a mute toggle and a skip button, Escape also skips, and users who prefer reduced motion get a short static version.
-- **Board.** Top capsules, a route tape, and open edges.
-- **Capsules.** Browse capsules and open a detail drawer for each one.
-- **New capsule.** Pick a name, strategy, size, daily spend, hop types, and an optional coin.
-- **Pools.** The liquidity launchpad: depth bands, migration handoff, and a spread dampener for coins you launch.
-- **Protocol.** How the multi-hop route and its fees work.
+> Everything runs on a seeded sample market. Nothing here signs or sends a transaction. To trade for real you plug in your own executor, wallet and RPC. Trading can lose money.
 
-On screens 1100px and wider the navigation is a left sidebar (the cliff in the intro turns into it). On smaller screens it is a top bar.
+## Run it
 
-## Tech
-
-- [React 19](https://react.dev) and [Vite 7](https://vite.dev), with no other runtime dependencies.
-- The mascot is drawn on a `<canvas>` from layered sprite parts in `public/intro/`.
-- All sound is synthesized with the Web Audio API, so there are no audio files.
-
-## Getting started
+Needs Node 18+ (20+ recommended) and git.
 
 ```bash
+git clone https://github.com/buenoyed/pillees
+cd pillees
 npm install
-npm run dev       # http://localhost:5173
-npm run build     # production build in dist/
-npm run preview   # serve the production build
+
+npm run pillees -- quote SOL MOSS PILL --in 1    # quote a 2-hop buy
+npm test                                         # SDK + CLI tests
+npm run dev                                      # the site, http://localhost:5173
 ```
 
-## Project layout
+## The CLI
+
+```bash
+npm run pillees -- quote SOL MOSS PILL --in 1 --slippage 50
+npm run pillees -- accounts SOL MOSS PILL        # the 26 accounts, in order
+npm run pillees -- venues                        # the sample market
+npm run pillees -- scan --ticks 20               # watch for edges
+npm run pillees -- init capsule.json             # write a capsule config
+npm run pillees -- run capsule.json --ticks 30   # dry run it
+```
+
+Every command takes `--json` and `--seed`. For a global `pillees` command run `cd packages/cli && npm link`.
 
 ```
-public/
-  pillee.png          mascot artwork
-  intro/              sprite parts (body, arms, feet) used by the canvas rig
-src/
-  main.jsx            entry point
-  App.jsx             layout, navigation, and all page sections
-  components.jsx      shared UI pieces
-  data.js             illustrative capsules, routes, and pools
-  Intro.jsx           the cliff / skydive / parachute intro
-  HeroPillee.jsx      the live homepage mascot (idle, blinks, looks, hop on click)
-  pillee.js           shared character rig: parts, poses, legs, drawing helpers
-  sound.js            Web Audio sound effects and the sound preference
-  styles.css          all styles
+SOL → MOSS → PILL  buy · 2 hops
+
+hop  venue            in                 out                  fee
+1    pool MOSS/SOL    1 SOL              6608291.7698 MOSS    0.0005 SOL (protocol)
+2    curve PILL/MOSS  6608291.7698 MOSS  24046624.23883 PILL  19824.87531 MOSS (creator)
+
+  out          24046624.23883 PILL
+  min out      23926391.117635 PILL at 50 bps
+  vs 2 trades  +280602.213757 PILL kept by charging fees once per route
+  accounts     26 (16 fixed + 5 × 2)
+  compute      ~145,000 CU incl. first-trade volume accumulator
 ```
+
+## The SDK
+
+```js
+import { defineCapsule, findEdge, mockMarket, quoteRoute, resolveRoute, runCapsule, toUnits } from "@pillees/sdk";
+
+const market = mockMarket({ seed: 7 });
+
+const quote = quoteRoute(resolveRoute(["SOL", "MOSS", "PILL"], market.venues()), toUnits("1", 9));
+console.log(quote.amountOut, quote.accounts, quote.computeUnits);
+
+const paths = [["SOL", "MOSS", "PILL"], ["SOL", "PILL"]];
+const trip = findEdge({ paths, venues: market.venues(), maxSize: toUnits("1", 9), minEdgeBps: 40 });
+
+const capsule = defineCapsule({ name: "spread-hunter", paths, maxSize: "0.5", dailyLimit: "5" });
+for await (const event of runCapsule(capsule, { market, ticks: 20 })) console.log(event);
+```
+
+Full API in [packages/sdk/README.md](packages/sdk/README.md).
+
+## How a capsule works
+
+1. **Watch.** Each tick it reads venue reserves (the sample market here, your RPC live).
+2. **Price both ways.** `findEdge` prices the pump route and the outside venue in both directions, across a ladder of sizes, after every fee.
+3. **Check limits.** Minimum edge, cooldown and a daily spend limit.
+4. **Plan the legs.** The pump leg is one `multi_hop_swap` with its accounts, data and a single `min_amount_out`. The outside leg is a plain swap.
+5. **Execute.** The default executor is a dry run. Pass your own to sign and send.
+
+### Why `multi_hop_swap`
+
+From Pump's [doc](https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/MULTI_HOP_SWAP.md), which the SDK follows:
+
+- Fees are charged once per route: protocol fee on the hop that trades your currency, creator and LP fees on the far end, nothing in the middle.
+- The middle coin never lands in your wallet, so no token account for it.
+- One slippage check, on the final amount. `min_amount_out` must be above zero.
+- Every hop is a buy or every hop is a sell (6086), hops must chain (6084), mayhem pools and curves are rejected (6080, 6108).
+- 16 fixed accounts plus 5 per hop. Up to 3 hops fit a legacy transaction; 4+ need a lookup table.
+
+## Repo layout
+
+```
+packages/
+  sdk/     @pillees/sdk
+  cli/     pillees
+web/       the site (Vite + React)
+video/     Remotion promo and teaser (own npm install)
+```
+
+## License
+
+MIT. Independent project, not affiliated with Pump.fun.

@@ -1,0 +1,22 @@
+{
+  "name": "pillees",
+  "version": "0.1.0",
+  "description": "Command line for Pillees capsules: quote multi_hop_swap routes, print account layouts, scan for spreads, and dry-run a capsule.",
+  "type": "module",
+  "bin": {
+    "pillees": "./bin/pillees.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@pillees/sdk": "0.1.0"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

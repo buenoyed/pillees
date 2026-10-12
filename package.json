@@ -1,0 +1,17 @@
+{
+  "name": "pillees-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/sdk",
+    "packages/cli",
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @pillees/web",
+    "build": "npm run build -w @pillees/web",
+    "preview": "npm run preview -w @pillees/web",
+    "test": "npm test -w @pillees/sdk -w pillees",
+    "pillees": "node packages/cli/bin/pillees.js"
+  }
+}

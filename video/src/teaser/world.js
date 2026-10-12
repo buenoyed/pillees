@@ -1,4 +1,4 @@
-import { clamp01, hash, lerp, smoothstep } from "../../../src/pillee.js";
+import { clamp01, hash, lerp, smoothstep } from "../../../web/src/pillee.js";
 
 export const W = 1920;
 export const H = 1080;
