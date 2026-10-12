@@ -13,7 +13,6 @@ import { claimNow, startTracker } from "./tracker.js";
 
 const PORT = Number(process.env.PORT) || 8080;
 const SITE = (process.env.VITE_SITE_URL || "https://pillees.fun").replace(/\/$/, "");
-const X_URL = process.env.VITE_X_URL || "";
 const STATIC = fileURLToPath(new URL("../../web/dist/", import.meta.url));
 const MAX_BODY = 1_500_000;
 const MAX_IMAGE = 400_000;
@@ -48,6 +47,19 @@ const number = (value, min, max, label) => {
   return n;
 };
 
+function socialUrl(value, host, label) {
+  const text = String(value || "").trim();
+  if (!text) return null;
+  let url;
+  try {
+    url = new URL(text);
+  } catch {
+    fail(400, `${label} must be a full https:// link.`);
+  }
+  if (url.protocol !== "https:" || !host.test(url.hostname.replace(/^www\./, "")) || text.length > 200) fail(400, `${label} doesn't look right.`);
+  return url.toString();
+}
+
 async function publicBot(bot, totals = {}, coins = {}, market = {}) {
   const coin = coins[bot.id] ?? (await store.coinForBot(bot.id));
   return {
@@ -73,6 +85,10 @@ const publicCoin = (coin, market) => ({
   name: coin.name,
   ticker: coin.ticker,
   image: `/api/coins/${coin.mint}/image`,
+  description: coin.description || "",
+  twitter: coin.twitter || null,
+  telegram: coin.telegram || null,
+  website: `${SITE}/bots/${coin.botId}`,
   createdAt: coin.createdAt,
   marketCap: market?.marketCap ?? null,
 });
@@ -177,6 +193,8 @@ const routes = [
     if (name.length < 2 || name.length > 32) fail(400, "Coin name: 2 to 32 characters.");
     if (!/^[A-Z0-9]{2,10}$/.test(ticker)) fail(400, "Ticker: 2 to 10 letters or numbers.");
     const devBuy = number(fields.devBuy ?? 0, 0, 5, "Dev buy");
+    const twitter = socialUrl(fields.twitter, /^(x|twitter)\.com$/, "X link");
+    const telegram = socialUrl(fields.telegram, /^t\.me$/, "Telegram link");
     const image = parseImage(body.image || bot.logo, "Coin image");
     return exclusive(bot.id, async () => {
       const keypair = openKeypair(bot.secret);
@@ -188,10 +206,11 @@ const routes = [
         description: description || `${bot.name} is an arbitrage bot on Pillees. Creator fees from this coin fund its trading.`,
         image,
         website: `${SITE}/bots/${bot.id}`,
-        twitter: X_URL,
+        twitter,
+        telegram,
       });
       const { mint, signature } = await launchCoin(keypair, { name, ticker, uri, devBuySol: devBuy });
-      await store.createCoin({ mint, botId: bot.id, name, ticker, description, image: image.dataUrl, signature });
+      await store.createCoin({ mint, botId: bot.id, name, ticker, description, image: image.dataUrl, twitter, telegram, signature });
       await store.recordActivity(bot.id, { signature, kind: "launch", delta: null });
       return { mint, signature };
     });

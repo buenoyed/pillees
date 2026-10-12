@@ -55,7 +55,7 @@ async function pumpportal(body) {
   return VersionedTransaction.deserialize(new Uint8Array(await response.arrayBuffer()));
 }
 
-export async function uploadMetadata({ name, ticker, description, image, website, twitter }) {
+export async function uploadMetadata({ name, ticker, description, image, website, twitter, telegram }) {
   const form = new FormData();
   form.append("file", new Blob([image.bytes], { type: image.type }), `logo.${image.type.split("/")[1]}`);
   form.append("name", name);
@@ -63,6 +63,7 @@ export async function uploadMetadata({ name, ticker, description, image, website
   form.append("description", description);
   form.append("website", website);
   if (twitter) form.append("twitter", twitter);
+  if (telegram) form.append("telegram", telegram);
   form.append("showName", "true");
   const response = await fetch(PUMP_IPFS, { method: "POST", body: form });
   if (!response.ok) throw new Error(`pump.fun metadata upload: ${response.status}`);

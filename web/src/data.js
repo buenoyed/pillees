@@ -9,6 +9,8 @@ export const COIN = {
 COIN.pump = COIN.ca ? `https://pump.fun/coin/${COIN.ca}` : "";
 COIN.chart = COIN.ca ? `https://dexscreener.com/solana/${COIN.ca}` : "";
 
+export const SITE = (clean(env.VITE_SITE_URL) || "https://pillees.fun").replace(/\/$/, "");
+
 export const LINKS = {
   x: clean(env.VITE_X_URL),
   github: clean(env.VITE_GITHUB_URL) || "https://github.com/buenoyed/pillees",

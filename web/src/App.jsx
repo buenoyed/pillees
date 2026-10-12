@@ -5,7 +5,7 @@ import { useApi } from "./api";
 import { COIN, DOCS, LINKS } from "./data";
 import { PumpDocs, RunLocally, Sdk } from "./devpages";
 import { GitHubIcon, PumpIcon, XIcon } from "./icons";
-import { BotPage, BotTable, CoinGrid, Launch, Leaderboard, Markets } from "./platform";
+import { BotPage, BotTable, CoinGrid, Launch, LaunchCoinPage, Leaderboard, Markets } from "./platform";
 import { Link, PATH, isHome, useRoute } from "./router";
 import { ConnectButton } from "./wallet";
 
@@ -24,6 +24,7 @@ const TITLES = {
   leaderboard: "Leaderboard",
   launch: "Launch a bot",
   bot: "Bot",
+  coin: "Launch a coin",
   protocol: "How it works",
   docs: "Pump docs",
   sdk: "SDK",
@@ -89,6 +90,7 @@ export default function App() {
             {view === "leaderboard" && <Leaderboard />}
             {view === "launch" && <Launch />}
             {view === "bot" && <BotPage key={route.id} id={route.id} />}
+            {view === "coin" && <LaunchCoinPage key={route.id} id={route.id} />}
             {view === "protocol" && <Protocol />}
             {view === "sdk" && <Sdk />}
             {view === "docs" && <PumpDocs />}

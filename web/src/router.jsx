@@ -33,8 +33,8 @@ export function navigate(to) {
 
 function read() {
   const path = clean(window.location.pathname);
-  const bot = /^\/bots\/([\w-]+)$/.exec(path);
-  if (bot) return { view: "bot", id: bot[1] };
+  const bot = /^\/bots\/([\w-]+)(\/coin)?$/.exec(path);
+  if (bot) return { view: bot[2] ? "coin" : "bot", id: bot[1] };
   return { view: ROUTES[path] ?? "home" };
 }
 

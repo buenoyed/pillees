@@ -1236,3 +1236,51 @@ body.intro-lock { overflow: hidden; }
 }
 .foot-links a { color: var(--muted); text-decoration: none; font-weight: 550; }
 .foot-links a:hover { color: var(--ink); }
+
+/* ---------- Coin launch ---------- */
+.stepper { list-style: none; margin: 0 0 22px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.stepper li { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border: 1px solid var(--line); border-radius: 999px; color: var(--dim); font-size: 0.88rem; font-weight: 600; }
+.stepper li span { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #1b1c20; font-size: 0.78rem; }
+.stepper li.on { color: var(--ink); border-color: rgba(134, 239, 172, 0.5); }
+.stepper li.on span { background: var(--mint); color: #05210f; }
+.stepper li.done { color: var(--muted); }
+.stepper li.done span { background: var(--deep); color: var(--mint); }
+.launch-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+.launch-grid .form { gap: 22px; }
+.launch-grid fieldset { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.launch-grid fieldset:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.opt { color: var(--dim); font-weight: 450; font-size: 0.78rem; margin-left: 4px; }
+input[readonly] { color: var(--muted); background: #0c0d10; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips button { border: 1px solid var(--line-strong); background: transparent; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 0.88rem; color: var(--muted); }
+.chips button[aria-pressed="true"] { background: var(--mint); border-color: var(--mint); color: #05210f; }
+.chips input { width: 110px; padding: 8px 12px; border-radius: 999px; font-family: var(--mono); }
+.fee-route { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid rgba(134, 239, 172, 0.35); border-radius: 16px; background: rgba(134, 239, 172, 0.05); font-weight: 600; }
+.fee-route > span { display: inline-flex; align-items: center; gap: 8px; }
+.fee-route i { color: var(--mint); font-style: normal; }
+.fee-route .logo { border-radius: 6px; }
+.fee-route code { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+.btn-big { padding: 15px 22px; font-size: 1.05rem; justify-content: center; }
+.launch-side { position: sticky; top: 24px; display: grid; gap: 12px; }
+.preview, .cost { border: 1px solid var(--line-strong); border-radius: 22px; background: var(--panel); padding: 18px; display: grid; gap: 12px; }
+.preview .eyebrow, .cost .eyebrow { margin: 0; }
+.preview-top { display: flex; gap: 14px; align-items: center; }
+.preview-top .logo { border-radius: 18px; }
+.preview-top div { display: grid; min-width: 0; }
+.preview-top strong { font-family: var(--display); font-size: 1.35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview-top span { color: var(--mint); font-family: var(--mono); font-size: 0.85rem; }
+.preview-top small { color: var(--dim); }
+.preview-desc { color: var(--muted); font-size: 0.92rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.coin-socials { display: flex; gap: 8px; }
+.coin-socials a { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--ink); }
+.coin-socials a:hover { border-color: var(--mint); color: var(--mint); }
+.cost dl { margin: 0; display: grid; gap: 8px; }
+.cost dl div { display: flex; justify-content: space-between; gap: 10px; font-size: 0.92rem; }
+.cost dt { color: var(--muted); }
+.cost dd { margin: 0; font-family: var(--mono); }
+.cost .total { padding-top: 8px; border-top: 1px solid var(--line); font-weight: 700; }
+.launch-side .wallet-card code { min-width: 0; font-size: 0.74rem; }
+@media (max-width: 980px) {
+  .launch-grid { grid-template-columns: 1fr; }
+  .launch-side { position: static; order: -1; }
+}

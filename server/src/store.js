@@ -42,6 +42,8 @@ async function pgStore(url) {
       signature text,
       created_at timestamptz not null default now()
     );
+    alter table coins add column if not exists twitter text;
+    alter table coins add column if not exists telegram text;
     create table if not exists activity (
       bot_id text not null references bots(id),
       signature text not null,
@@ -77,6 +79,8 @@ async function pgStore(url) {
       ticker: row.ticker,
       description: row.description,
       image: row.image,
+      twitter: row.twitter,
+      telegram: row.telegram,
       signature: row.signature,
       createdAt: row.created_at.toISOString(),
     };
@@ -110,8 +114,8 @@ async function pgStore(url) {
     },
     async createCoin(c) {
       await pool.query(
-        "insert into coins (mint, bot_id, name, ticker, description, image, signature) values ($1,$2,$3,$4,$5,$6,$7)",
-        [c.mint, c.botId, c.name, c.ticker, c.description, c.image, c.signature],
+        "insert into coins (mint, bot_id, name, ticker, description, image, twitter, telegram, signature) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+        [c.mint, c.botId, c.name, c.ticker, c.description, c.image, c.twitter, c.telegram, c.signature],
       );
     },
     async listCoins() {
