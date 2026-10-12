@@ -29,6 +29,10 @@ npm test                                         # SDK + CLI tests
 npm run dev                                      # the site, http://localhost:5173
 ```
 
+## Config
+
+Copy `.env.example` to `.env` at the repo root and fill it in. It holds the official coin (name, ticker, contract address), the socials, and the server settings (RPC, database, key secret). `VITE_` values are built into the public site; the rest never leave the server. On Railway, set the same names under the `pillees` service variables.
+
 ## The CLI
 
 ```bash

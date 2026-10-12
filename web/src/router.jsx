@@ -3,10 +3,8 @@ import { useEffect, useState } from "react";
 const NAVIGATE = "pillees:navigate";
 
 export const ROUTES = {
-  "/": "board",
-  "/capsules": "capsules",
+  "/": "home",
   "/protocol": "protocol",
-  "/new": "new",
   "/sdk": "sdk",
   "/docs": "docs",
   "/run": "run",
@@ -31,7 +29,7 @@ export function navigate(to) {
 }
 
 export function useView() {
-  const read = () => ROUTES[clean(window.location.pathname)] ?? "board";
+  const read = () => ROUTES[clean(window.location.pathname)] ?? "home";
   const [view, setView] = useState(read);
   useEffect(() => {
     const sync = () => setView(read());

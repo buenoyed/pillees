@@ -14,15 +14,15 @@ npm run preview
 
 | Path | |
 | --- | --- |
-| `/` | Board: top capsules, route tape, open edges. The intro plays only here, on first load. |
-| `/capsules` | Browse capsules, with a detail drawer |
-| `/new` | Build a capsule on the preview board |
-| `/protocol` | How the multi-hop route and its fees work |
-| `/sdk` | SDK docs and a playground running `@pillees/sdk` in the browser |
-| `/docs` | Pump's `MULTI_HOP_SWAP.md`, fetched live from pump-public-docs and rendered (its synthetic migration section is left out) |
+| `/` | Home: Pump's multi-hop update, how a Pillees bot uses it, one example route, and the coin. The intro plays only here, on first load. |
+| `/protocol` | The update in detail: rules, fees, Pump's SDKs |
+| `/docs` | Pump's `MULTI_HOP_SWAP.md`, fetched live from pump-public-docs (its synthetic migration section is left out) |
+| `/sdk` | `@pillees/sdk` docs |
 | `/run` | Commands to run everything locally |
 
-Old `/#capsules` style links redirect to the path. Routing is client side, so hosting needs a fallback to `index.html`: `vercel.json` covers Vercel and `public/_redirects` covers Netlify and Cloudflare Pages. Set the project root to `web`.
+The coin contract address and socials come from the root `.env` (see `.env.example`). Empty values are hidden.
+
+Old `/#protocol` style links redirect to the path. Routing is client side, so hosting needs a fallback to `index.html`: `vercel.json` covers Vercel and `public/_redirects` covers Netlify and Cloudflare Pages. Set the project root to `web`.
 
 ## Intro and mascot
 
@@ -35,12 +35,12 @@ public/          pillee.png, intro sprite parts, SPA redirects
 src/
   main.jsx       entry
   router.jsx     path routing, Link, legacy hash redirect
-  App.jsx        shell, nav, board, capsules, protocol, create
+  App.jsx        shell, nav, home, the update page
   devpages.jsx   SDK, Pump docs and Run locally pages
   Intro.jsx      cliff / skydive / parachute intro
   HeroPillee.jsx live homepage mascot
   pillee.js      character rig shared with the videos
   sound.js       Web Audio effects
-  data.js        illustrative capsules, routes and edges
+  data.js        coin, socials and doc links, read from .env
   styles.css
 ```

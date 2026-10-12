@@ -1,33 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
-import {
-  defineCapsule,
-  findEdge,
-  fromUnits,
-  minAmountOut,
-  mockMarket,
-  multiHopSwapData,
-  quoteRoute,
-  quoteSeparateTrades,
-  resolveRoute,
-  runCapsule,
-  toUnits,
-} from "@pillees/sdk";
 import { DOCS } from "./data";
 import { Link } from "./router";
 
 const REPO = DOCS.pillees;
-const decimals = (mint) => (mint === "SOL" ? 9 : 6);
-const amount = (units, mint) => `${trim(fromUnits(units, decimals(mint)))} ${mint}`;
-const trim = (value) => {
-  const [whole, frac = ""] = value.split(".");
-  const n = Number(whole);
-  const short = n >= 1000 ? "" : frac.slice(0, n >= 1 ? 4 : 6).replace(/0+$/, "");
-  return `${n.toLocaleString("en-US")}${short ? `.${short}` : ""}`;
-};
-const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-
 function CopyButton({ text }) {
   const [done, setDone] = useState(false);
   return (
@@ -71,162 +48,6 @@ export function Code({ title, lang = "js", children }) {
 
 /* ---------------------------------- SDK ---------------------------------- */
 
-const PRESETS = [
-  { path: ["SOL", "MOSS", "PILL"], note: "buy · pool then curve" },
-  { path: ["SOL", "ZEST", "CAPS"], note: "buy · pool then curve" },
-  { path: ["PILL", "MOSS", "SOL"], note: "sell · curve then pool" },
-  { path: ["SOL", "PILL"], note: "outside venue · one hop" },
-];
-const PAIRS = [
-  [["SOL", "MOSS", "PILL"], ["SOL", "PILL"]],
-  [["SOL", "ZEST", "CAPS"], ["SOL", "CAPS"]],
-];
-
-function Playground() {
-  const market = useRef(null);
-  if (!market.current) market.current = mockMarket({ seed: 7, shock: 0.04 });
-  const [version, setVersion] = useState(0);
-  const [preset, setPreset] = useState(0);
-  const [size, setSize] = useState("1");
-  const [slippage, setSlippage] = useState(50);
-  const [log, setLog] = useState([]);
-  const [running, setRunning] = useState(false);
-
-  const path = PRESETS[preset].path;
-  const result = useMemo(() => {
-    try {
-      const venues = market.current.venues();
-      const route = resolveRoute(path, venues);
-      const amountIn = toUnits(size || "0", decimals(path[0]));
-      if (amountIn <= 0n) throw new Error("Enter an amount above zero.");
-      const quote = quoteRoute(route, amountIn);
-      const separate = quote.multiHop ? quoteSeparateTrades(route, amountIn) : null;
-      const minOut = minAmountOut(quote.amountOut, slippage);
-      const edges = PAIRS.map((paths) => findEdge({ paths, venues, maxSize: toUnits("1", 9), minEdgeBps: 30 }));
-      return { quote, separate, minOut, data: quote.multiHop ? hex(multiHopSwapData(amountIn, minOut)) : null, edges };
-    } catch (error) {
-      return { error: error.message };
-    }
-  }, [path, size, slippage, version]);
-
-  async function runDry() {
-    setRunning(true);
-    setLog([]);
-    const capsule = defineCapsule({ name: "spread-hunter", paths: PAIRS[0], maxSize: "0.5", dailyLimit: "5", minEdgeBps: 40, cooldownTicks: 2 });
-    const lines = [];
-    for await (const event of runCapsule(capsule, { market: market.current, ticks: 16, intervalMs: 90 })) {
-      lines.push(event);
-      setLog([...lines]);
-    }
-    setVersion((v) => v + 1);
-    setRunning(false);
-  }
-
-  return (
-    <div className="playground">
-      <div className="pg-controls">
-        <div className="pg-field">
-          <span>Route</span>
-          <div className="seg wrap">
-            {PRESETS.map((item, index) => (
-              <button key={item.path.join()} type="button" aria-pressed={preset === index} onClick={() => setPreset(index)}>
-                {item.path.join(" → ")}
-              </button>
-            ))}
-          </div>
-          <small>{PRESETS[preset].note}</small>
-        </div>
-        <label className="pg-field">
-          <span>Amount in ({path[0]})</span>
-          <input inputMode="decimal" value={size} onChange={(event) => setSize(event.target.value.replace(/[^\d.]/g, ""))} />
-        </label>
-        <div className="pg-field">
-          <span>Slippage</span>
-          <div className="seg">
-            {[10, 50, 100].map((bps) => (
-              <button key={bps} type="button" aria-pressed={slippage === bps} onClick={() => setSlippage(bps)}>
-                {bps} bps
-              </button>
-            ))}
-          </div>
-        </div>
-        <button className="btn btn-ghost" type="button" onClick={() => { market.current.tick(); setVersion((v) => v + 1); }}>
-          Move the market
-        </button>
-      </div>
-
-      {result.error ? (
-        <p className="pg-error">{result.error}</p>
-      ) : (
-        <div className="pg-out">
-          <table className="pg-table">
-            <thead>
-              <tr><th>Hop</th><th>In</th><th>Out</th><th>Fee</th></tr>
-            </thead>
-            <tbody>
-              {result.quote.steps.map((step) => (
-                <tr key={step.index}>
-                  <td>{step.index + 1} · {step.side}</td>
-                  <td>{amount(step.amountIn, step.mintIn)}</td>
-                  <td>{amount(step.amountOut, step.mintOut)}</td>
-                  <td>{step.fee > 0n ? `${amount(step.fee, step.feeMint)} (${Object.keys(step.fees).filter((k) => step.fees[k] > 0n).join(" + ")})` : "none"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <dl className="pg-facts">
-            <div><dt>Out</dt><dd>{amount(result.quote.amountOut, result.quote.output)}</dd></div>
-            <div><dt>min_amount_out</dt><dd>{amount(result.minOut, result.quote.output)}</dd></div>
-            {result.separate && (
-              <div>
-                <dt>vs separate trades</dt>
-                <dd className="up">+{amount(result.quote.amountOut - result.separate.amountOut, result.quote.output)}</dd>
-              </div>
-            )}
-            <div><dt>Accounts</dt><dd>{result.quote.multiHop ? `${result.quote.accounts} (16 + 5 × ${result.quote.steps.length})` : "plain swap"}</dd></div>
-            <div><dt>Compute</dt><dd>~{result.quote.computeUnits.toLocaleString("en-US")} CU</dd></div>
-            <div><dt>Transaction</dt><dd>{result.quote.legacy ? "legacy fits" : "v0 + lookup table"}</dd></div>
-          </dl>
-          {result.data && (
-            <p className="pg-data">
-              <span>instruction data</span>
-              <code>{result.data}</code>
-            </p>
-          )}
-          <div className="pg-edges">
-            {result.edges.map((trip) => (
-              <p key={trip.label} className={trip.fire ? "fire" : undefined}>
-                <strong>{trip.edgeBps > 0 ? "+" : ""}{trip.edgeBps} bps</strong>
-                <span>{trip.label}</span>
-                <small>{trip.fire ? `fire at ${amount(trip.amountIn, "SOL")}` : "below the 30 bps bar"}</small>
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="pg-run">
-        <button className="btn btn-primary" type="button" disabled={running} onClick={runDry}>
-          {running ? "Running…" : "Run a capsule, dry"}
-        </button>
-        <span>16 ticks of <code>runCapsule</code> on the sample market. Nothing is signed or sent.</span>
-      </div>
-      {log.length > 0 && (
-        <ol className="pg-log">
-          {log.map((event, index) => (
-            <li key={index} className={event.type}>
-              <span>{String(event.tick).padStart(2, "0")}</span>
-              <b>{event.type}</b>
-              <span>{event.type === "idle" ? `best ${event.edgeBps} bps` : `${event.route} · ${event.edgeBps} bps`}</span>
-              <span>{event.type === "fill" ? `+${event.profit} SOL on ${event.size}` : event.reason || ""}</span>
-            </li>
-          ))}
-        </ol>
-      )}
-    </div>
-  );
-}
-
 const API = [
   ["resolveRoute(path, venues)", "Turn a mint path like SOL → MOSS → PILL into hops, picking the venue for each pair."],
   ["planRoute(route)", "Check the multi_hop_swap rules: one direction, hops that chain, no mayhem, outside venues only alone. Returns accounts, CU and whether legacy fits."],
@@ -249,15 +70,9 @@ export function Sdk() {
         <p>
           The same code the capsules use: <code>multi_hop_swap</code> rules, quotes with fees once per
           route, the account layout, instruction data and an edge finder. No dependencies. Runs in Node
-          and the browser. The panel below runs it in this tab.
+          and the browser.
         </p>
       </header>
-
-      <article className="dev-block">
-        <h2>Try it</h2>
-        <p>Sample market, made-up reserves. Change the route or size and the quote updates.</p>
-        <Playground />
-      </article>
 
       <article className="dev-block">
         <h2>Install</h2>
