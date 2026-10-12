@@ -17,10 +17,9 @@ npm run preview
 | `/` | Board: top capsules, route tape, open edges. The intro plays only here, on first load. |
 | `/capsules` | Browse capsules, with a detail drawer |
 | `/new` | Build a capsule on the preview board |
-| `/pools` | The liquidity launchpad |
 | `/protocol` | How the multi-hop route and its fees work |
 | `/sdk` | SDK docs and a playground running `@pillees/sdk` in the browser |
-| `/docs` | Pump's `MULTI_HOP_SWAP.md`, fetched live from pump-public-docs and rendered |
+| `/docs` | Pump's `MULTI_HOP_SWAP.md`, fetched live from pump-public-docs and rendered (its synthetic migration section is left out) |
 | `/run` | Commands to run everything locally |
 
 Old `/#capsules` style links redirect to the path. Routing is client side, so hosting needs a fallback to `index.html`: `vercel.json` covers Vercel and `public/_redirects` covers Netlify and Cloudflare Pages. Set the project root to `web`.
@@ -36,12 +35,12 @@ public/          pillee.png, intro sprite parts, SPA redirects
 src/
   main.jsx       entry
   router.jsx     path routing, Link, legacy hash redirect
-  App.jsx        shell, nav, board, capsules, pools, protocol, create
+  App.jsx        shell, nav, board, capsules, protocol, create
   devpages.jsx   SDK, Pump docs and Run locally pages
   Intro.jsx      cliff / skydive / parachute intro
   HeroPillee.jsx live homepage mascot
   pillee.js      character rig shared with the videos
   sound.js       Web Audio effects
-  data.js        illustrative capsules, routes and pools
+  data.js        illustrative capsules, routes and edges
   styles.css
 ```

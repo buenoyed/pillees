@@ -5,7 +5,6 @@ const NAVIGATE = "pillees:navigate";
 export const ROUTES = {
   "/": "board",
   "/capsules": "capsules",
-  "/pools": "pools",
   "/protocol": "protocol",
   "/new": "new",
   "/sdk": "sdk",

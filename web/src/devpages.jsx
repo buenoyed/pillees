@@ -393,6 +393,15 @@ function renderDoc(markdown) {
     table.replaceWith(wrap);
     wrap.append(table);
   });
+  template.content.querySelectorAll("h2").forEach((heading) => {
+    if (!/synthetic/i.test(heading.textContent)) return;
+    let node = heading;
+    while (node && !(node !== heading && node.tagName === "H2")) {
+      const next = node.nextElementSibling;
+      node.remove();
+      node = next;
+    }
+  });
   const toc = Array.from(template.content.querySelectorAll("h2, h3"), (h) => ({ id: h.id, text: h.textContent, depth: h.tagName === "H3" ? 3 : 2 }));
   return { html: template.innerHTML, toc };
 }

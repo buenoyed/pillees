@@ -3,11 +3,9 @@ import HeroPillee from "./HeroPillee";
 import Intro from "./Intro";
 import {
   DOCS,
-  POOL_STRATEGIES,
   SEED_BOTS,
   SEED_EDGES,
   SEED_FEED,
-  SEED_WATCHES,
   STRATEGIES,
   strategyName,
 } from "./data";
@@ -18,7 +16,6 @@ import { Link, PATH, isHome, navigate, useView } from "./router";
 const NAV = [
   { id: "board", label: "Board", icon: "M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" },
   { id: "capsules", label: "Capsules", icon: "M5.5 2h5a3.5 3.5 0 0 1 3.5 3.5v5a3.5 3.5 0 0 1-3.5 3.5h-5A3.5 3.5 0 0 1 2 10.5v-5A3.5 3.5 0 0 1 5.5 2zM2 8h12" },
-  { id: "pools", label: "Pools", icon: "M8 1.8C10.4 5 12.6 7.4 12.6 10a4.6 4.6 0 0 1-9.2 0C3.4 7.4 5.6 5 8 1.8z" },
   { id: "protocol", label: "Protocol", icon: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5" },
   { id: "sdk", label: "SDK", icon: "M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4M9.2 2.5 6.8 13.5" },
   { id: "docs", label: "Pump docs", icon: "M2.5 3h4a2 2 0 0 1 1.5.7A2 2 0 0 1 9.5 3h4v10h-4a1.5 1.5 0 0 0-1.5 1.2A1.5 1.5 0 0 0 6.5 13h-4zM8 3.7v10.5" },
@@ -30,7 +27,6 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [bots, setBots] = useState(SEED_BOTS);
   const [feed, setFeed] = useState(SEED_FEED);
-  const [watches, setWatches] = useState(SEED_WATCHES);
   const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast] = useState("");
   const [showIntro, setShowIntro] = useState(isHome);
@@ -42,7 +38,6 @@ export default function App() {
     const titles = {
       board: "Board",
       capsules: "Capsules",
-      pools: "Pools",
       protocol: "Protocol",
       new: "New capsule",
       sdk: "SDK",
@@ -88,7 +83,6 @@ export default function App() {
       venues: draft.venues,
       direction: draft.direction,
       note: draft.instructions.trim() || strategyName(draft.strategy),
-      token: draft.token,
       pnl: { "24H": 0, "7D": 0, "30D": 0 },
       fills: 0,
       hit: "—",
@@ -111,20 +105,6 @@ export default function App() {
     setSelectedId(bot.id);
     setToast(`${bot.name} is on the preview board.`);
     go("board");
-  }
-
-  function addWatch(draft) {
-    const watch = {
-      id: `watch-${Date.now()}`,
-      name: draft.name.trim(),
-      ticker: draft.ticker.trim().toUpperCase(),
-      quote: draft.quote.trim() || "SOL",
-      strategy: draft.strategy,
-      band: String(draft.band),
-      status: "Preview",
-    };
-    setWatches((current) => [watch, ...current]);
-    setToast(`${watch.ticker} is on the preview list. Nothing was launched.`);
   }
 
   return (
@@ -180,7 +160,6 @@ export default function App() {
         {view === "capsules" && (
           <Capsules bots={bots} onOpen={setSelectedId} />
         )}
-        {view === "pools" && <Pools watches={watches} onCreate={addWatch} />}
         {view === "protocol" && <Protocol />}
         {view === "new" && <Create onCreate={addBot} />}
         {view === "sdk" && <Sdk />}
@@ -205,7 +184,7 @@ export default function App() {
 }
 
 function Ticker() {
-  const items = ["SOL → MOSS → PILL", "fees once per route", "no middle token account", "SOL → ZEST → CAPS", "synthetic migration handoff", "SOL → DRIP → PILL", "one slippage check"];
+  const items = ["SOL → MOSS → PILL", "fees once per route", "no middle token account", "SOL → ZEST → CAPS", "SOL → DRIP → PILL", "one slippage check"];
   const loop = [...items, ...items];
   return (
     <div className="ticker" aria-hidden="true">
@@ -432,7 +411,7 @@ function Hero() {
 
 function ProductSplit() {
   return (
-    <section className="split" aria-label="Two launchpads">
+    <section className="split" aria-label="Capsules and the SDK">
       <article className="split-card">
         <p className="eyebrow">01 · Arbitrage</p>
         <h2>A launchpad for your own bot.</h2>
@@ -445,29 +424,27 @@ function ProductSplit() {
         <ol className="steps">
           <li>Name the capsule and pick a strategy.</li>
           <li>Set size, daily spend, and whether hops are curves, pools, or both.</li>
-          <li>Optionally attach a coin whose fees refill trading or pay holders.</li>
+          <li>Pick the pump route and the outside pool it compares against.</li>
         </ol>
         <Link className="text-link" to="/new">
           Build one on the preview
         </Link>
       </article>
       <article className="split-card">
-        <p className="eyebrow">02 · Liquidity</p>
-        <h2>Launch a coin. Pillees minds the book.</h2>
+        <p className="eyebrow">02 · Build</p>
+        <h2>Run the same tech yourself.</h2>
         <p>
-          The pools launchpad is for coins you launch, with a strategy that shifts
-          liquidity as the market moves. Pump’s synthetic migration lets the final
-          bonding-curve buy continue into the reserves the AMM pool would open with,
-          without the old cap on that buy. That handoff is useful. It does not
-          rebalance liquidity by itself.
+          The route math is open source. The SDK quotes a multi-hop route with fees
+          once per route, lists the accounts, builds the instruction data, and finds
+          the edge against an outside pool. The CLI does the same from a terminal.
         </p>
         <ol className="steps">
-          <li>Pair with SOL or with another pump coin.</li>
-          <li>Pick depth bands, a migration handoff, or a spread dampener.</li>
-          <li>Pillees watches the curve, the completing buy, and the pool after migrate.</li>
+          <li>Clone the repo and install.</li>
+          <li>Quote a route or dry run a capsule from the CLI.</li>
+          <li>Plug in your own executor when you want it to trade.</li>
         </ol>
-        <Link className="text-link" to="/pools">
-          Open the pools desk
+        <Link className="text-link" to="/sdk">
+          Open the SDK
         </Link>
       </article>
     </section>
@@ -489,7 +466,7 @@ function Capsules({ bots, onOpen }) {
         <p className="eyebrow">Capsules</p>
         <h1>Every bot is its own wallet and its own rules.</h1>
         <p>
-          Spread hunters, migration watches, and fee recyclers share one board.
+          Spread hunters and size ladders share one board.
           Open a capsule to read the route it is built for.
         </p>
       </header>
@@ -592,12 +569,6 @@ function CapsuleDrawer({ bot, feed, onClose }) {
             <dt>Hit rate</dt>
             <dd>{bot.hit}</dd>
           </div>
-          {bot.token && (
-            <div>
-              <dt>Coin</dt>
-              <dd>{bot.token}</dd>
-            </div>
-          )}
         </dl>
         <div className="pnl-row">
           {["24H", "7D", "30D"].map((range) => (
@@ -637,7 +608,6 @@ function Create({ onCreate }) {
     hops: "2",
     venues: "Curves and pools",
     direction: "Buys",
-    token: "No coin",
   });
   const [errors, setErrors] = useState({});
 
@@ -782,28 +752,6 @@ function Create({ onCreate }) {
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend>Optional coin</legend>
-          <div className="choice-grid three">
-            {[
-              ["No coin", "The capsule only trades. No extra mint."],
-              ["Sweep into the bot", "Creator fees on your coin can be swept back in as trading inventory."],
-              ["Holder rewards", "The creator fee is set aside for holders, the way Pump holder-rewards coins work."],
-            ].map(([token, blurb]) => (
-              <label key={token} className={form.token === token ? "choice on" : "choice"}>
-                <input
-                  type="radio"
-                  name="token"
-                  checked={form.token === token}
-                  onChange={() => set("token", token)}
-                />
-                <strong>{token}</strong>
-                <span>{blurb}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
         <div className="form-actions">
           <button className="btn btn-primary" type="submit">
             Add to preview board
@@ -813,134 +761,6 @@ function Create({ onCreate }) {
           </Link>
         </div>
       </form>
-    </section>
-  );
-}
-
-function Pools({ watches, onCreate }) {
-  const [form, setForm] = useState({
-    name: "",
-    ticker: "",
-    quote: "SOL",
-    strategy: "handoff",
-    band: "10",
-  });
-  const [errors, setErrors] = useState({});
-
-  function set(key, value) {
-    setForm((current) => ({ ...current, [key]: value }));
-  }
-
-  function submit(event) {
-    event.preventDefault();
-    const next = {};
-    if (form.name.trim().length < 2) next.name = "Name the coin.";
-    if (!/^[a-zA-Z0-9]{2,8}$/.test(form.ticker.trim())) next.ticker = "Ticker should be 2–8 letters or numbers.";
-    if (!form.quote.trim()) next.quote = "Say what it is paired with.";
-    const band = Number(form.band);
-    if (!Number.isFinite(band) || band <= 0 || band > 40) next.band = "Use a band between 1 and 40.";
-    setErrors(next);
-    if (Object.keys(next).length) return;
-    onCreate(form);
-    setForm({ name: "", ticker: "", quote: "SOL", strategy: form.strategy, band: form.band });
-  }
-
-  return (
-    <section className="page">
-      <header className="page-head">
-        <p className="eyebrow">Liquidity launchpad</p>
-        <h1>Launch the coin. Keep a strategy on the liquidity.</h1>
-        <p>
-          Pillees is built around Pump’s migration path. A completing buy can now
-          keep going: it takes the curve’s remaining tokens, then buys against the
-          reserves that would be deposited into the PumpSwap pool. The pool opens
-          later where that buy stopped. Your strategy can follow that moment. The
-          migration itself does not rebalance anything.
-        </p>
-      </header>
-
-      <div className="pools-layout">
-        <form className="form" onSubmit={submit} noValidate>
-          <label>
-            Coin name
-            <input value={form.name} onChange={(event) => set("name", event.target.value)} placeholder="Green Dose" />
-            {errors.name && <small className="err">{errors.name}</small>}
-          </label>
-          <div className="form-row">
-            <label>
-              Ticker
-              <input value={form.ticker} onChange={(event) => set("ticker", event.target.value)} placeholder="DOSE" />
-              {errors.ticker && <small className="err">{errors.ticker}</small>}
-            </label>
-            <label>
-              Quote
-              <input value={form.quote} onChange={(event) => set("quote", event.target.value)} placeholder="SOL or a pump coin" />
-              {errors.quote && <small className="err">{errors.quote}</small>}
-            </label>
-          </div>
-          <fieldset>
-            <legend>Strategy</legend>
-            <div className="choice-grid">
-              {POOL_STRATEGIES.map((item) => (
-                <label key={item.id} className={form.strategy === item.id ? "choice on" : "choice"}>
-                  <input
-                    type="radio"
-                    name="pool-strategy"
-                    checked={form.strategy === item.id}
-                    onChange={() => set("strategy", item.id)}
-                  />
-                  <strong>{item.name}</strong>
-                  <span>{item.blurb}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <label>
-            Band (%)
-            <input inputMode="decimal" value={form.band} onChange={(event) => set("band", event.target.value)} />
-            {errors.band && <small className="err">{errors.band}</small>}
-          </label>
-          <button className="btn btn-primary" type="submit">
-            Add liquidity watch
-          </button>
-          <p className="fine">
-            Preview list only. Pairing a new coin with an existing pump coin is a real
-            Pump creation path (<a href={DOCS.quoteMint}>create with a pump-coin quote</a>),
-            and this page does not submit it.
-          </p>
-        </form>
-
-        <div>
-          <h2 className="subhead">Watches</h2>
-          <ul className="watch-list">
-            {watches.map((watch) => (
-              <li key={watch.id}>
-                <article>
-                  <header>
-                    <strong>{watch.ticker}</strong>
-                    <span>{watch.status}</span>
-                  </header>
-                  <p>{watch.name}</p>
-                  <dl>
-                    <div>
-                      <dt>Quote</dt>
-                      <dd>{watch.quote}</dd>
-                    </div>
-                    <div>
-                      <dt>Strategy</dt>
-                      <dd>{strategyName(watch.strategy)}</dd>
-                    </div>
-                    <div>
-                      <dt>Band</dt>
-                      <dd>{watch.band}%</dd>
-                    </div>
-                  </dl>
-                </article>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
     </section>
   );
 }
@@ -992,69 +812,21 @@ function Protocol() {
           <li>Exact in. <code>min_amount_out</code> is checked once and has to be above zero.</li>
           <li>One direction. Mixing a buy hop with a sell hop fails.</li>
           <li>The hops have to chain. The coin out of one hop is a mint of the next.</li>
-          <li>Pool hops have to be pump pools from migration. Mayhem-mode pools and mayhem curves are not supported.</li>
+          <li>Pool hops have to be pump pools. Mayhem-mode pools and mayhem curves are not supported.</li>
           <li>Sixteen fixed accounts, then five accounts per hop. Two or three hops fit a legacy transaction. Four or more need an address lookup table.</li>
           <li>Each hop is roughly 30k to 50k compute units, so the compute budget has to be set on purpose.</li>
         </ul>
         <p>
           On a buy, the protocol fee lands on the first hop. On a sell, it lands on the
-          last hop. The creator fee — or holder-rewards fee — and, on a pool, the LP fee,
+          last hop. The creator fee and, on a pool, the LP fee,
           land once on the coin at the far end. Hops in the middle charge nothing. A
-          one-hop route costs the same as a normal PumpSwap v2 or bonding-curve v3 trade.
+          one-hop route costs the same as a normal single trade.
         </p>
         <p>
-          <a href={DOCS.multiHop}>Multi-hop swap docs</a>
+          <Link to="/docs">Pump’s multi-hop doc, embedded</Link>
           {" · "}
-          <a href={DOCS.tradeV3}>Bonding curve trades v3</a>
+          <a href={DOCS.multiHop}>on GitHub</a>
         </p>
-      </article>
-
-      <article className="doc-block" id="migration">
-        <h2>Synthetic migration</h2>
-        <p>
-          The last buy on a bonding curve no longer has a max size. With <code>buy_v3</code>,{" "}
-          <code>buy_exact_quote_in_v3</code>, and a bonding-curve hop inside{" "}
-          <code>multi_hop_swap</code>, a buy that asks for more than the curve has left
-          does not fail. It takes what is left at the curve price, completes the curve,
-          and buys the rest from the tokens that would have gone into the PumpSwap pool,
-          at the price that pool would charge.
-        </p>
-        <ol className="steps tall">
-          <li>Curve part. Remaining tokens, normal curve price. The curve is complete.</li>
-          <li>Pool part. The rest is priced on the reserves migration would deposit, with PumpSwap’s constant product. For a SOL pair, the migration fee comes off the raised SOL first.</li>
-          <li>Later, migration creates the pool with the reserves that buy left behind. The pool opens where the buy stopped.</li>
-        </ol>
-        <ul className="rules">
-          <li>Only the buy that crosses the limit gets this. After it, buys and sells on the curve fail until migration.</li>
-          <li>Older buy instructions do not do this. Mayhem coins do not get a synthetic migration.</li>
-          <li>On a multi-hop curve hop, the hop spends the rest of its input on the pool part.</li>
-          <li>Both parts use the bonding-curve fee schedule, not the pool’s fees.</li>
-        </ul>
-        <p className="callout">
-          Synthetic migration is a pricing path for the last buy. It does not rebalance
-          a pool, move LP, or run a strategy. The Pillees pools desk can watch that
-          handoff and then apply the band you configured. Those are different jobs.
-        </p>
-        <p>
-          <a href={DOCS.synthetic}>Synthetic migration docs</a>
-        </p>
-      </article>
-
-      <article className="doc-block" id="coins">
-        <h2>Coins, quotes, and fees</h2>
-        <p>
-          <code>create_v2</code> can pair a new coin with an existing pump coin. That
-          pair is why a route is SOL → A → B instead of a single SOL hop. Holder-rewards
-          coins send the creator fee to holders through Pump, instead of a creator wallet.
-          New cashback coins are rejected. Fees on the newer trades stay on the curve or
-          in the pool until someone calls the permissionless sweep instructions.
-        </p>
-        <ul className="link-list">
-          <li><a href={DOCS.quoteMint}>Creating a coin paired with a pump coin</a></li>
-          <li><a href={DOCS.holderRewards}>Holder rewards coins</a></li>
-          <li><a href={DOCS.sweeps}>Fee sweeps</a></li>
-          <li><a href={DOCS.repo}>Pump public docs repository</a></li>
-        </ul>
       </article>
 
       <article className="doc-block">
@@ -1085,7 +857,7 @@ function Footer() {
         <img src="/pillee.png" alt="" width="36" height="42" />
         <div>
           <strong>Pillees</strong>
-          <p>Arbitrage capsules and liquidity watches for Pump coins.</p>
+          <p>Arbitrage capsules for Pump coins, built on multi_hop_swap.</p>
         </div>
       </div>
       <div className="foot-links">

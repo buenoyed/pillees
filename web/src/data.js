@@ -3,16 +3,6 @@ export const DOCS = {
   pillees: "https://github.com/buenoyed/pillees",
   multiHop:
     "https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/MULTI_HOP_SWAP.md",
-  synthetic:
-    "https://github.com/pump-fun/pump-public-docs/blob/main/docs/SYNTHETIC_MIGRATION.md",
-  tradeV3:
-    "https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/TRADE_V3.md",
-  quoteMint:
-    "https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/CREATE_WITH_PUMP_COIN_QUOTE.md",
-  sweeps:
-    "https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/SWEEP_FEES.md",
-  holderRewards:
-    "https://github.com/pump-fun/pump-public-docs/blob/main/docs/HOLDER_REWARDS_README.md",
   pumpSdk: "https://www.npmjs.com/package/@pump-fun/pump-sdk/v/4.0.0",
   swapSdk: "https://www.npmjs.com/package/@pump-fun/pump-swap-sdk/v/2.1.0",
   rustSdk: "https://crates.io/crates/pump-rust-client/0.4.0",
@@ -26,43 +16,16 @@ export const STRATEGIES = [
       "Compares a multi-hop quote with the coins on the route. Fires when the edge clears your minimum, in one direction only.",
   },
   {
-    id: "migration",
-    name: "Migration watch",
+    id: "ladder",
+    name: "Size ladder",
     blurb:
-      "Sits on curves close to complete. The last buy can run through synthetic migration, then the bot waits for the pool to open.",
-  },
-  {
-    id: "fees",
-    name: "Fee recycler",
-    blurb:
-      "Uses an optional coin. Creator fees can be swept back into the bot as trading inventory, or set aside for holders.",
+      "Prices every edge at several sizes and fires the one that keeps the most after fees, so thin pools do not eat the gap.",
   },
   {
     id: "custom",
     name: "Custom note",
     blurb:
       "You write the instructions. Size and daily spend still cap the capsule.",
-  },
-];
-
-export const POOL_STRATEGIES = [
-  {
-    id: "bands",
-    name: "Depth bands",
-    blurb:
-      "Shifts how much of the coin sits ready to trade as price walks through bands you set. Built for after the pool exists.",
-  },
-  {
-    id: "handoff",
-    name: "Migration handoff",
-    blurb:
-      "Watches the completing buy, CompleteEvent, and PostCompleteBuyEvent, then follows the pool that opens on the reserves that buy left behind.",
-  },
-  {
-    id: "dampen",
-    name: "Spread dampener",
-    blurb:
-      "When the coin’s price drifts too far from its quote coin, the strategy leans inventory back toward the band.",
   },
 ];
 
@@ -82,11 +45,11 @@ export const SEED_BOTS = [
   {
     id: "visor",
     name: "Visor",
-    strategy: "migration",
+    strategy: "ladder",
     hops: "2",
     venues: "Curve only",
     direction: "Buys",
-    note: "Only joins a curve hop that can finish in synthetic migration. Stands down once the curve is complete.",
+    note: "Prices four sizes on every edge and takes the one that keeps the most after fees.",
     pnl: { "24H": 1.12, "7D": 3.04, "30D": 9.7 },
     fills: 18,
     hit: "55%",
@@ -94,11 +57,11 @@ export const SEED_BOTS = [
   {
     id: "greencap",
     name: "Greencap",
-    strategy: "fees",
+    strategy: "ladder",
     hops: "2",
     venues: "Mixed",
     direction: "Sells",
-    note: "Sells back to SOL and sweeps creator fees into inventory. Holder-rewards mode is off on this capsule.",
+    note: "Sells back to SOL through a curve and a pool. Cuts size when the pool is thin.",
     pnl: { "24H": -0.38, "7D": 1.05, "30D": 4.62 },
     fills: 29,
     hit: "48%",
@@ -110,7 +73,7 @@ export const SEED_BOTS = [
     hops: "2",
     venues: "Pool then curve",
     direction: "Buys",
-    note: "Requires the first leg on a migrated pump pool so SOL moves as wrapped SOL.",
+    note: "Requires the first leg on a pump pool so SOL moves as wrapped SOL.",
     pnl: { "24H": 0.74, "7D": 2.2, "30D": 7.15 },
     fills: 33,
     hit: "58%",
@@ -142,11 +105,11 @@ export const SEED_BOTS = [
   {
     id: "lamport",
     name: "Lamport",
-    strategy: "migration",
+    strategy: "spread",
     hops: "2",
     venues: "Curve then pool",
     direction: "Buys",
-    note: "Quotes the pool part of a completing buy off the reserves migration would deposit, minus the SOL migration fee.",
+    note: "Curve then pool. Waits for an edge above 50 bps before it fires.",
     pnl: { "24H": -0.16, "7D": 0.62, "30D": 3.4 },
     fills: 14,
     hit: "50%",
@@ -154,11 +117,11 @@ export const SEED_BOTS = [
   {
     id: "nectar",
     name: "Nectar",
-    strategy: "fees",
+    strategy: "ladder",
     hops: "2",
     venues: "Pool only",
     direction: "Buys",
-    note: "Optional coin is a holder-rewards coin. Creator fees are set aside for holders instead of refilling the bot.",
+    note: "Pool to pool. The middle hop charges nothing, so thinner edges can still clear.",
     pnl: { "24H": 0.48, "7D": 1.7, "30D": 5.9 },
     fills: 24,
     hit: "57%",
@@ -202,7 +165,7 @@ export const SEED_FEED = [
     edge: null,
     size: null,
     hops: [],
-    text: "DRIP has 4% of the curve left. Standing by. A buy past what is left can complete the curve and price the rest on the reserves the pool would open with. After that, the curve is closed until migration.",
+    text: "The SOL → DRIP → PILL edge closed before the ladder found a size that kept anything after fees. Standing by.",
   },
   {
     id: "f4",
@@ -216,7 +179,7 @@ export const SEED_FEED = [
       { mint: "ZEST", via: "pool" },
       { mint: "CAPS", via: "curve" },
     ],
-    text: "ZEST already migrated, so the SOL leg is wrapped SOL into the pump pool. CAPS is still on its curve, quoted in ZEST.",
+    text: "ZEST trades on its pump pool, so the SOL leg is wrapped SOL. CAPS is still on its curve, quoted in ZEST.",
   },
   {
     id: "f5",
@@ -254,7 +217,7 @@ export const SEED_FEED = [
       { mint: "DRIP", via: "curve" },
       { mint: "PILL", via: "pool" },
     ],
-    text: "DRIP hop would empty the curve. The rest of that hop’s input prices against the would-be pool. Mayhem curves cannot be a hop, and this one is not mayhem.",
+    text: "Protocol fee on the SOL hop, creator and LP fees on PILL, nothing on DRIP. Mayhem curves cannot be a hop, and this one is not mayhem.",
   },
   {
     id: "f8",
@@ -268,7 +231,7 @@ export const SEED_FEED = [
       { mint: "NECT", via: "pool" },
       { mint: "CAPS", via: "pool" },
     ],
-    text: "Both hops are pump pools. Holder-rewards fee on CAPS stays with holders. Middle hop charged nothing.",
+    text: "Both hops are pump pools. Protocol fee on SOL, creator and LP fees on CAPS. The middle hop charged nothing.",
   },
   {
     id: "f9",
@@ -355,33 +318,8 @@ export const SEED_EDGES = [
   },
 ];
 
-export const SEED_WATCHES = [
-  {
-    id: "w1",
-    name: "Pillee",
-    ticker: "PILL",
-    quote: "MOSS",
-    strategy: "handoff",
-    band: "8",
-    status: "Curve open",
-  },
-  {
-    id: "w2",
-    name: "Greencap",
-    ticker: "CAP",
-    quote: "SOL",
-    strategy: "bands",
-    band: "12",
-    status: "Pool live",
-  },
-];
-
 export function strategyName(id) {
-  return (
-    STRATEGIES.find((s) => s.id === id)?.name ||
-    POOL_STRATEGIES.find((s) => s.id === id)?.name ||
-    id
-  );
+  return STRATEGIES.find((s) => s.id === id)?.name || id;
 }
 
 export function formatSol(n) {
