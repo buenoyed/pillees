@@ -1,30 +1,44 @@
 import { useEffect, useState } from "react";
 import HeroPillee from "./HeroPillee";
 import Intro from "./Intro";
-import { COIN, DOCS, SOCIALS } from "./data";
+import { useApi } from "./api";
+import { COIN, DOCS, LINKS } from "./data";
 import { PumpDocs, RunLocally, Sdk } from "./devpages";
-import { Link, PATH, isHome, useView } from "./router";
+import { GitHubIcon, PumpIcon, XIcon } from "./icons";
+import { BotPage, BotTable, CoinGrid, Launch, Leaderboard, Markets } from "./platform";
+import { Link, PATH, isHome, useRoute } from "./router";
+import { ConnectButton } from "./wallet";
 
 const NAV = [
   { id: "home", label: "Home", icon: "M2.5 7.5 8 2.5l5.5 5v6h-4v-4h-3v4h-4z" },
-  { id: "protocol", label: "The update", icon: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5" },
+  { id: "markets", label: "Markets", icon: "M2.5 13.5h11M4 11V7.5M7 11V4.5M10 11V6.5M13 11V3" },
+  { id: "leaderboard", label: "Leaderboard", icon: "M5 2.5h6v4a3 3 0 0 1-6 0zM5 4H2.5a2.5 2.5 0 0 0 2.6 3M11 4h2.5a2.5 2.5 0 0 1-2.6 3M8 9.5v3M5.5 13.5h5" },
+  { id: "launch", label: "Launch", icon: "M8 1.8c2.6 1.6 3.6 4.4 3 7.7H5c-.6-3.3.4-6.1 3-7.7zM5 9.5 3.2 12h2.4M11 9.5l1.8 2.5h-2.4M8 11.5v2.7" },
+  { id: "protocol", label: "How it works", icon: "M3.5 1.8h6l3 3v9.4h-9zM9.5 1.8v3h3M5.5 8.5h5M5.5 11h5" },
   { id: "docs", label: "Pump docs", icon: "M2.5 3h4a2 2 0 0 1 1.5.7A2 2 0 0 1 9.5 3h4v10h-4a1.5 1.5 0 0 0-1.5 1.2A1.5 1.5 0 0 0 6.5 13h-4zM8 3.7v10.5" },
-  { id: "sdk", label: "SDK", icon: "M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4M9.2 2.5 6.8 13.5" },
-  { id: "run", label: "Run locally", icon: "M2 3h12v10H2zM4.5 6.5 6.5 8l-2 1.5M8 10h3.5" },
 ];
 
 const TITLES = {
-  home: "Arbitrage bots on Pump's multi-hop swap",
-  protocol: "The multi-hop update",
+  home: "Arbitrage bots with their own coins",
+  markets: "Markets",
+  leaderboard: "Leaderboard",
+  launch: "Launch a bot",
+  bot: "Bot",
+  protocol: "How it works",
   docs: "Pump docs",
   sdk: "SDK",
   run: "Run locally",
 };
 
-const X = SOCIALS.find((item) => item.id === "x");
+const SOCIALS = [
+  LINKS.x && { id: "x", label: "X", url: LINKS.x, Icon: XIcon },
+  { id: "github", label: "GitHub", url: LINKS.github, Icon: GitHubIcon },
+  { id: "pump", label: "pump.fun", url: LINKS.pump, Icon: PumpIcon },
+].filter(Boolean);
 
 export default function App() {
-  const view = useView();
+  const route = useRoute();
+  const view = route.view;
   const [menuOpen, setMenuOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(isHome);
   const [introStage, setIntroStage] = useState("waiting");
@@ -33,7 +47,7 @@ export default function App() {
     document.title = `Pillees — ${TITLES[view] || TITLES.home}`;
     setMenuOpen(false);
     window.scrollTo(0, 0);
-  }, [view]);
+  }, [view, route.id]);
 
   return (
     <>
@@ -56,19 +70,7 @@ export default function App() {
                 {item.label}
               </Link>
             ))}
-            {COIN.pump ? (
-              <a className="btn btn-primary nav-cta" href={COIN.pump}>
-                Buy ${COIN.ticker}
-              </a>
-            ) : X ? (
-              <a className="btn btn-primary nav-cta" href={X.url}>
-                Follow on X
-              </a>
-            ) : (
-              <Link className="btn btn-primary nav-cta" to="/docs">
-                Read Pump’s doc
-              </Link>
-            )}
+            <ConnectButton className="btn btn-primary nav-cta" />
           </nav>
           <button
             className="menu"
@@ -83,6 +85,10 @@ export default function App() {
         <div className="page">
           <main id="content">
             {view === "home" && <Home />}
+            {view === "markets" && <Markets />}
+            {view === "leaderboard" && <Leaderboard />}
+            {view === "launch" && <Launch />}
+            {view === "bot" && <BotPage key={route.id} id={route.id} />}
             {view === "protocol" && <Protocol />}
             {view === "sdk" && <Sdk />}
             {view === "docs" && <PumpDocs />}
@@ -124,13 +130,13 @@ function CopyCA() {
   );
 }
 
-function Socials() {
-  if (!SOCIALS.length) return null;
+function Socials({ labels = true }) {
   return (
     <div className="socials">
-      {SOCIALS.map((item) => (
-        <a key={item.id} href={item.url} target="_blank" rel="noreferrer">
-          {item.label}
+      {SOCIALS.map(({ id, label, url, Icon }) => (
+        <a key={id} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label}>
+          <Icon />
+          {labels && <span>{label}</span>}
         </a>
       ))}
     </div>
@@ -138,12 +144,37 @@ function Socials() {
 }
 
 function Home() {
+  const coins = useApi("/coins", 30_000);
+  const bots = useApi("/bots?range=7D", 30_000);
   return (
     <>
       <Hero />
+      <Steps />
+      <section className="home-block" aria-labelledby="new-coins">
+        <div className="block-head">
+          <div>
+            <p className="eyebrow">Just launched</p>
+            <h2 id="new-coins">Bot coins</h2>
+          </div>
+          <Link className="text-link" to="/markets">
+            All coins →
+          </Link>
+        </div>
+        {coins.loading && !coins.data ? <div className="skeleton" /> : <CoinGrid coins={coins.data?.coins ?? []} limit={6} />}
+      </section>
+      <section className="home-block" aria-labelledby="top-bots">
+        <div className="block-head">
+          <div>
+            <p className="eyebrow">Leaderboard · 7 days</p>
+            <h2 id="top-bots">Top bots</h2>
+          </div>
+          <Link className="text-link" to="/leaderboard">
+            Full leaderboard →
+          </Link>
+        </div>
+        {bots.loading && !bots.data ? <div className="skeleton" /> : <BotTable bots={bots.data?.bots ?? []} limit={5} />}
+      </section>
       <WhatShipped />
-      <HowItWorks />
-      <Route />
       <Coin />
     </>
   );
@@ -153,19 +184,19 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="eyebrow">Pump’s new multi-hop swap</p>
-        <h1>Arbitrage bots for Pump’s multi-hop swap.</h1>
+        <p className="eyebrow">Built on Pump’s multi-hop swap</p>
+        <h1>Launch an arbitrage bot. Give it a coin.</h1>
         <p className="lede">
-          Pump just shipped <code>multi_hop_swap</code>: one instruction that trades
-          through several coins in a row, like SOL → MOSS → PILL. Pillees bots use it
-          to catch price gaps between Pump and other pools, and close them for profit.
+          Every Pillees bot has its own public wallet and its own pump.fun coin. The coin’s
+          creator fees flow into the bot, so the more it trades, the more the bot has to
+          arbitrage with. You own it with your wallet: stop it or withdraw any time.
         </p>
         <div className="hero-actions">
-          <a className="btn btn-primary" href="#how">
-            How it works
-          </a>
-          <Link className="btn btn-ghost" to="/docs">
-            Read Pump’s doc
+          <Link className="btn btn-primary" to="/launch">
+            Launch a bot
+          </Link>
+          <Link className="btn btn-ghost" to="/leaderboard">
+            Leaderboard
           </Link>
         </div>
         <CopyCA />
@@ -191,21 +222,53 @@ function Hero() {
   );
 }
 
+const LAUNCH_STEPS = [
+  ["Launch a bot", "Connect your wallet, pick a name and a logo, set its limits. It gets its own Solana wallet. Fund it with SOL."],
+  ["Launch its coin", "From the bot page, launch a pump.fun coin with the bot as creator. One click, signed by you, paid by the bot."],
+  ["Fees fund the bot", "Every trade of the coin pays creator fees to the bot. It collects them and adds them to its trading balance."],
+];
+
+function Steps() {
+  return (
+    <section className="home-block" aria-labelledby="steps-title">
+      <p className="eyebrow">How it works</p>
+      <h2 id="steps-title">Three steps</h2>
+      <ol className="launch-steps">
+        {LAUNCH_STEPS.map(([title, text], index) => (
+          <li key={title}>
+            <span>{index + 1}</span>
+            <strong>{title}</strong>
+            <p>{text}</p>
+          </li>
+        ))}
+      </ol>
+      <div className="hero-actions">
+        <Link className="btn btn-primary" to="/launch">
+          Launch a bot
+        </Link>
+        <Link className="btn btn-ghost" to="/protocol">
+          What the bot trades
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function WhatShipped() {
   return (
     <section className="home-block" aria-labelledby="shipped">
       <p className="eyebrow">The update</p>
-      <h2 id="shipped">What Pump shipped</h2>
+      <h2 id="shipped">Why multi-hop makes this work</h2>
       <p className="home-lede">
-        Lots of Pump coins are now paired with another Pump coin instead of SOL. Buying
-        one used to take two trades. Now it is one.
+        Lots of Pump coins are paired with another Pump coin instead of SOL. Buying one used
+        to take two trades. Pump’s <code>multi_hop_swap</code> makes it one, so small price
+        gaps are finally worth taking.
       </p>
       <div className="compare">
         <div>
           <h3>Before</h3>
           <ul>
             <li>Two trades: SOL → MOSS, then MOSS → PILL</li>
-            <li>MOSS lands in your wallet in between</li>
             <li>Fees on both trades</li>
             <li>Two chances for the price to slip</li>
           </ul>
@@ -214,73 +277,14 @@ function WhatShipped() {
           <h3>With multi_hop_swap</h3>
           <ul>
             <li>One instruction: SOL → MOSS → PILL</li>
-            <li>MOSS never touches your wallet</li>
             <li>Fees once for the whole route</li>
             <li>One slippage check, on what you get at the end</li>
           </ul>
         </div>
       </div>
-    </section>
-  );
-}
-
-const STEPS = [
-  ["Watch", "The bot watches the price of a coin on Pump and in an outside pool, all the time."],
-  ["Spot the gap", "When the same coin is cheaper in one place than the other, after every fee, that is the gap."],
-  ["Buy cheap, sell high", "It buys where it is cheap and sells where it is expensive. The Pump side is one multi_hop_swap."],
-  ["Keep the difference", "The gap is the profit. Fees charged once per route are what make small gaps worth taking."],
-];
-
-function HowItWorks() {
-  return (
-    <section className="home-block" id="how" aria-labelledby="how-title">
-      <p className="eyebrow">How it works</p>
-      <h2 id="how-title">What a Pillees bot does</h2>
-      <ol className="flow">
-        {STEPS.map(([title, text], index) => (
-          <li key={title}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <div>
-              <strong>{title}</strong>
-              <p>{text}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
-const HOPS = [
-  { from: "SOL", to: "MOSS", venue: "MOSS pool", fee: "Protocol fee is paid here, once" },
-  { from: "MOSS", to: "PILL", venue: "PILL curve", fee: "Creator fee is paid here, once" },
-];
-
-function Route() {
-  return (
-    <section className="home-block" aria-labelledby="route-title">
-      <p className="eyebrow">One route</p>
-      <h2 id="route-title">Buying PILL with SOL, in one go</h2>
-      <p className="home-lede">
-        PILL is paired with MOSS, and MOSS is paired with SOL. The bot sends one
-        instruction that walks the whole path.
-      </p>
-      <ol className="hops">
-        {HOPS.map((hop, index) => (
-          <li key={hop.venue}>
-            <span className="hop-n">Hop {index + 1}</span>
-            <strong>
-              {hop.from} → {hop.to}
-            </strong>
-            <span>{hop.venue}</span>
-            <small>{hop.fee}</small>
-          </li>
-        ))}
-      </ol>
-      <p className="callout">
-        MOSS only exists inside the route. It never lands in the wallet, so there is no
-        extra account to open and nothing to clean up.
-      </p>
+      <Link className="text-link" to="/protocol">
+        How the bot trades it →
+      </Link>
     </section>
   );
 }
@@ -292,8 +296,7 @@ function Coin() {
         <p className="eyebrow">The coin</p>
         <h2 id="coin-title">${COIN.ticker}</h2>
         <p className="home-lede">
-          The official {COIN.name} coin. This is the only contract address. Anything
-          else is not us.
+          The official {COIN.name} coin. This is the only contract address. Anything else is not us.
         </p>
         <CopyCA />
         <div className="hero-actions">
@@ -315,28 +318,73 @@ function Coin() {
   );
 }
 
+const TRADE_STEPS = [
+  ["Watch", "The bot watches the price of a coin on Pump and in an outside pool, all the time."],
+  ["Spot the gap", "When the same coin is cheaper in one place than the other, after every fee, that is the gap."],
+  ["Buy cheap, sell high", "It buys where it is cheap and sells where it is expensive. The Pump side is one multi_hop_swap."],
+  ["Keep the difference", "The gap is the profit. It stays in the bot wallet, where anyone can check it."],
+];
+
+const HOPS = [
+  { from: "SOL", to: "MOSS", venue: "MOSS pool", fee: "Protocol fee is paid here, once" },
+  { from: "MOSS", to: "PILL", venue: "PILL curve", fee: "Creator fee is paid here, once" },
+];
+
 function Protocol() {
   return (
     <section className="page protocol">
       <header className="page-head">
-        <p className="eyebrow">The update, in detail</p>
-        <h1>How multi_hop_swap works.</h1>
+        <p className="eyebrow">How it works</p>
+        <h1>What a Pillees bot does.</h1>
         <p>
-          The rules every Pillees route follows, from Pump’s docs in{" "}
-          <a href={DOCS.repo}>pump-fun/pump-public-docs</a>. If this page and the chain
-          ever disagree, the chain wins.
+          Bots trade price gaps through Pump’s <code>multi_hop_swap</code>. The rules below come
+          from Pump’s docs in <a href={DOCS.repo}>pump-fun/pump-public-docs</a>. If this page and
+          the chain ever disagree, the chain wins.
         </p>
       </header>
 
       <article className="doc-block">
-        <h2>The idea</h2>
-        <p>
-          <code>multi_hop_swap</code> is one PumpSwap instruction that trades through
-          two or more pools and bonding curves in a row. It exists for coins paired
-          with another Pump coin. If coin B is quoted in Pump coin A, and A is quoted
-          in SOL, buying B used to mean two trades and a token account for A. Now it
-          is SOL → A → B in one instruction. Selling is the reverse.
-        </p>
+        <h2>The trade</h2>
+        <ol className="flow">
+          {TRADE_STEPS.map(([title, text], index) => (
+            <li key={title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <strong>{title}</strong>
+                <p>{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </article>
+
+      <article className="doc-block">
+        <h2>Your bot, your wallet</h2>
+        <ul className="rules">
+          <li>Each bot has its own Solana wallet. Its address, balance and every transaction are public.</li>
+          <li>The private key is encrypted on the Pillees server. Nobody sees it, including the owner.</li>
+          <li>Only the owner wallet can start, stop or withdraw, by signing a message. Signing costs nothing.</li>
+          <li>Withdrawals always go to the owner wallet, nowhere else.</li>
+          <li>The bot’s coin is a normal pump.fun coin with the bot as creator. Its creator fees go to the bot.</li>
+          <li>The multi-hop trading engine is rolling out to bots. Until it reaches a bot, that bot collects its coin’s creator fees.</li>
+        </ul>
+      </article>
+
+      <article className="doc-block">
+        <h2>One route</h2>
+        <p>PILL is paired with MOSS, and MOSS is paired with SOL. One instruction walks the whole path.</p>
+        <ol className="hops">
+          {HOPS.map((hop, index) => (
+            <li key={hop.venue}>
+              <span className="hop-n">Hop {index + 1}</span>
+              <strong>
+                {hop.from} → {hop.to}
+              </strong>
+              <span>{hop.venue}</span>
+              <small>{hop.fee}</small>
+            </li>
+          ))}
+        </ol>
       </article>
 
       <article className="doc-block">
@@ -354,33 +402,15 @@ function Protocol() {
       <article className="doc-block">
         <h2>The fees</h2>
         <p>
-          On a buy, the protocol fee lands on the first hop. On a sell, it lands on the
-          last hop. The creator fee and, on a pool, the LP fee land once, on the coin at
-          the far end. Hops in the middle charge nothing.
+          On a buy, the protocol fee lands on the first hop. On a sell, it lands on the last hop.
+          The creator fee and, on a pool, the LP fee land once, on the coin at the far end. Hops
+          in the middle charge nothing.
         </p>
         <p>
           <Link to="/docs">Read Pump’s full doc</Link>
           {" · "}
           <a href={DOCS.multiHop}>on GitHub</a>
         </p>
-      </article>
-
-      <article className="doc-block">
-        <h2>Pump’s SDKs</h2>
-        <ul className="link-list">
-          <li>
-            <a href={DOCS.swapSdk}>@pump-fun/pump-swap-sdk 2.1.0</a>
-            <span>Pool hops, <code>multiHopSwapQuote</code>, and the swap instruction.</span>
-          </li>
-          <li>
-            <a href={DOCS.pumpSdk}>@pump-fun/pump-sdk 4.0.0</a>
-            <span>Route resolution, a simulated amount out, and SOL wrapping around the swap.</span>
-          </li>
-          <li>
-            <a href={DOCS.rustSdk}>pump-rust-client 0.4.0</a>
-            <span>Pool or curve hops, a quote, and a compute-unit hint.</span>
-          </li>
-        </ul>
       </article>
     </section>
   );
@@ -393,20 +423,19 @@ function Footer() {
         <img src="/pillee.png" alt="" width="36" height="42" />
         <div>
           <strong>Pillees</strong>
-          <p>Arbitrage bots built on Pump’s multi_hop_swap.</p>
+          <p>Arbitrage bots with their own coins, on Pump’s multi_hop_swap.</p>
         </div>
       </div>
       <div className="foot-links">
-        <Link to="/protocol">The update</Link>
+        <Link to="/launch">Launch</Link>
+        <Link to="/leaderboard">Leaderboard</Link>
+        <Link to="/markets">Markets</Link>
+        <Link to="/protocol">How it works</Link>
         <Link to="/docs">Pump docs</Link>
         <Link to="/sdk">SDK</Link>
         <Link to="/run">Run locally</Link>
-        {SOCIALS.map((item) => (
-          <a key={item.id} href={item.url}>
-            {item.label}
-          </a>
-        ))}
       </div>
+      <Socials labels={false} />
       <p className="fine">Independent project. Not affiliated with Pump.fun. Trading can lose money.</p>
     </footer>
   );

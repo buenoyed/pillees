@@ -4,6 +4,9 @@ const NAVIGATE = "pillees:navigate";
 
 export const ROUTES = {
   "/": "home",
+  "/markets": "markets",
+  "/leaderboard": "leaderboard",
+  "/launch": "launch",
   "/protocol": "protocol",
   "/sdk": "sdk",
   "/docs": "docs",
@@ -13,7 +16,7 @@ export const PATH = Object.fromEntries(Object.entries(ROUTES).map(([path, view])
 
 const clean = (pathname) => pathname.replace(/\/+$/, "") || "/";
 
-// Old links were /#capsules. Move them to /capsules before anything renders.
+// Old links were /#protocol. Move them to /protocol before anything renders.
 export function upgradeHashRoute() {
   const id = window.location.hash.slice(1);
   if (clean(window.location.pathname) === "/" && PATH[id]) {
@@ -24,15 +27,21 @@ export function upgradeHashRoute() {
 export const isHome = () => clean(window.location.pathname) === "/";
 
 export function navigate(to) {
-  if (to !== window.location.pathname + window.location.hash) window.history.pushState(null, "", to);
+  if (to !== window.location.pathname + window.location.search) window.history.pushState(null, "", to);
   window.dispatchEvent(new Event(NAVIGATE));
 }
 
-export function useView() {
-  const read = () => ROUTES[clean(window.location.pathname)] ?? "home";
-  const [view, setView] = useState(read);
+function read() {
+  const path = clean(window.location.pathname);
+  const bot = /^\/bots\/([\w-]+)$/.exec(path);
+  if (bot) return { view: "bot", id: bot[1] };
+  return { view: ROUTES[path] ?? "home" };
+}
+
+export function useRoute() {
+  const [route, setRoute] = useState(read);
   useEffect(() => {
-    const sync = () => setView(read());
+    const sync = () => setRoute(read());
     window.addEventListener("popstate", sync);
     window.addEventListener(NAVIGATE, sync);
     return () => {
@@ -40,7 +49,7 @@ export function useView() {
       window.removeEventListener(NAVIGATE, sync);
     };
   }, []);
-  return view;
+  return route;
 }
 
 export function Link({ to, onClick, ...rest }) {

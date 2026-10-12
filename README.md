@@ -4,16 +4,19 @@ Capsules that hunt the spread on Pump.
 
 A capsule is a small arbitrage bot. It watches a pump coin on two venues: a pump route that clears in one PumpSwap [`multi_hop_swap`](https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/MULTI_HOP_SWAP.md), and an outside pool. When the price gap beats every fee, it buys on the cheap side and sells on the other.
 
+On [pillees.fun](https://pillees.fun) anyone can launch a bot, give it a logo and a pump.fun coin, and track it on a public leaderboard. Each bot has its own wallet. The coin is launched with the bot as creator, so its creator fees flow into the bot. The owner proves ownership by signing with their wallet and can stop the bot or withdraw its SOL at any time. The private key stays encrypted on the server.
+
 This repo is the tech behind it:
 
 | Package | What it is |
 | --- | --- |
 | [`@pillees/sdk`](packages/sdk) | Route rules, quotes with fees once per route, the account layout, instruction data, an edge finder and the capsule loop. No dependencies. |
 | [`pillees`](packages/cli) | A terminal tool built on the SDK: quote routes, list accounts, scan for edges, dry run a capsule. |
-| [`web`](web) | The site at [pillees.fun](https://pillees.fun), with a live SDK playground and Pump's doc embedded. |
+| [`server`](server) | The pillees.fun backend: bot wallets, wallet-signed owner actions, coin launches through PumpPortal, creator-fee claims, on-chain profit tracking. Also serves the site. |
+| [`web`](web) | The site: launch, leaderboard, markets, bot pages, and Pump's doc embedded. |
 | [`video`](video) | Remotion sources for the promo and teaser. |
 
-> Everything runs on a seeded sample market. Nothing here signs or sends a transaction. To trade for real you plug in your own executor, wallet and RPC. Trading can lose money.
+> The SDK and CLI run on a seeded sample market and never send a transaction. The live multi-hop trading engine is rolling out to bots; until then a running bot collects its coin's creator fees. Trading can lose money.
 
 ## Run it
 
@@ -25,9 +28,12 @@ cd pillees
 npm install
 
 npm run pillees -- quote SOL MOSS PILL --in 1    # quote a 2-hop buy
-npm test                                         # SDK + CLI tests
+npm test                                         # SDK, CLI and server tests
+npm run dev:server                               # API on http://localhost:8080 (needs BOT_KEY_SECRET in .env)
 npm run dev                                      # the site, http://localhost:5173
 ```
+
+Without `DATABASE_URL` the server keeps its data in `server/.data/db.json`. In production, `npm run build && npm start` serves the built site and the API from one process.
 
 ## Config
 
@@ -103,6 +109,7 @@ From Pump's [doc](https://github.com/pump-fun/pump-public-docs/blob/main/docs/in
 packages/
   sdk/     @pillees/sdk
   cli/     pillees
+server/    API, bot wallets, tracker; serves web/dist
 web/       the site (Vite + React)
 video/     Remotion promo and teaser (own npm install)
 ```

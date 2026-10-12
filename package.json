@@ -5,17 +5,19 @@
   "workspaces": [
     "packages/sdk",
     "packages/cli",
+    "server",
     "web"
   ],
   "scripts": {
     "dev": "npm run dev -w @pillees/web",
     "build": "npm run build -w @pillees/web",
     "preview": "npm run preview -w @pillees/web",
-    "test": "npm test -w @pillees/sdk -w pillees",
+    "test": "npm test -w @pillees/sdk -w pillees -w @pillees/server",
     "pillees": "node packages/cli/bin/pillees.js",
-    "start": "npm start -w @pillees/web"
+    "start": "npm start -w @pillees/server",
+    "dev:server": "npm run dev -w @pillees/server"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }
